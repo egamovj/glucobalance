@@ -1,0 +1,160 @@
+.analytics-container {
+  padding: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.analytics-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  grid-template-rows: auto auto;
+  gap: 24px;
+  margin-top: 24px;
+}
+
+.chart-card {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.chart-header h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.chart-wrapper {
+  height: 300px;
+  width: 100%;
+}
+
+.distribution {
+  grid-row: span 2;
+  align-items: center;
+}
+
+.doughnut-container {
+  position: relative;
+  width: 220px;
+  height: 220px;
+}
+
+.doughnut-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+}
+
+.doughnut-center h3 {
+  margin: 0;
+  font-size: 1.8rem;
+  color: var(--primary);
+}
+
+.doughnut-center span {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.dist-legend {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.legend-item .dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.stats-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.stat-mini-card {
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  transition: var(--transition);
+}
+
+.stat-mini-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+
+.stat-info span {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.stat-info h3 {
+  margin-top: 4px;
+  font-size: 1.3rem;
+  color: var(--text-main);
+}
+
+.stat-info sub {
+  font-size: 0.8rem;
+  bottom: 0;
+}
+
+.analytics-container.empty {
+  height: 70vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.empty-card {
+  text-align: center;
+  padding: 60px 40px;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.empty-card h2 {
+  color: var(--text-main);
+}
+
+.empty-card p {
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+@media (max-width: 1024px) {
+  .analytics-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .distribution {
+    grid-row: auto;
+  }
+}

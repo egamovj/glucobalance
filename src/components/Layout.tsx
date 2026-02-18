@@ -1,5 +1,5 @@
 import { useNavigate, NavLink, Outlet } from 'react-router-dom';
-import { User, Activity, AlertCircle, BookOpen, Heart, Home, Calculator, LogOut } from 'lucide-react';
+import { User, Activity, AlertCircle, BookOpen, Heart, Home, Calculator, LogOut, PieChart } from 'lucide-react';
 import { auth } from '../firebase';
 import { signOut } from 'firebase/auth';
 import './Layout.css';
@@ -40,6 +40,10 @@ const Layout: React.FC = () => {
           <NavLink to="/symptoms" className={({ isActive }) => `sidebar-item ${isActive ? 'active' : ''}`}>
             <AlertCircle size={20} />
             <span>Simptomlar</span>
+          </NavLink>
+          <NavLink to="/analytics" className={({ isActive }) => `sidebar-item ${isActive ? 'active' : ''}`}>
+            <PieChart size={20} />
+            <span>Tahlil</span>
           </NavLink>
           <div className="nav-divider">Tushunchalar</div>
           <NavLink to="/academy" className={({ isActive }) => `sidebar-item ${isActive ? 'active' : ''}`}>

@@ -11,6 +11,7 @@ import Symptoms from './pages/Symptoms';
 import Academy from './pages/Academy';
 import Healthy from './pages/Healthy';
 import Calculator from './pages/Calculator';
+import Analytics from './pages/Analytics';
 import Dashboard from './pages/Dashboard';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -66,6 +67,7 @@ function App() {
             <Route path="symptoms" element={<Symptoms />} />
             <Route path="academy" element={<Academy />} />
             <Route path="healthy" element={<Healthy />} />
+            <Route path="analytics" element={<Analytics />} />
             <Route path="calculator" element={<Calculator />} />
             <Route path="profile" element={<Profile />} />
             <Route path="*" element={<Navigate to="/" />} />
