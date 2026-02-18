@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useStore } from '../store';
-import { User, Activity, Ruler, Weight, Calendar, Heart, Shield } from 'lucide-react';
+import { User, Activity, Ruler, Weight, Calendar, Heart, Shield, Download } from 'lucide-react';
 import './Profile.css';
 
 const Profile: React.FC = () => {
   const { profile, setProfile, user } = useStore();
   const [isEditing, setIsEditing] = useState(!profile);
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [formData, setFormData] = useState(profile || {
     name: user?.displayName || '',
     birthDate: '',
@@ -18,6 +19,28 @@ const Profile: React.FC = () => {
     nanInsulin: 1.0,
     doctorNotes: ''
   });
+
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (e: Event) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    };
+  }, []);
+
+  const handleInstallClick = async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') {
+      setDeferredPrompt(null);
+    }
+  };
 
   const bmi = (formData.weight / Math.pow(formData.height / 100, 2)).toFixed(1);
 
@@ -88,7 +111,20 @@ const Profile: React.FC = () => {
           </div>
         </div>
 
-        <button className="btn-primary w-full" onClick={() => setIsEditing(true)}>Tahrirlash</button>
+        {deferredPrompt && (
+          <div className="card install-card glass">
+            <div className="install-content">
+              <Download size={24} color="var(--primary)" />
+              <div>
+                <h4>Ilovani o'rnatish</h4>
+                <p>Glucobalance-ni asosiy ekranga qo'shing va tezkor foydalaning.</p>
+              </div>
+            </div>
+            <button className="btn-primary" onClick={handleInstallClick}>O'rnatish</button>
+          </div>
+        )}
+
+        <button className="btn-primary w-full" style={{ marginTop: '20px' }} onClick={() => setIsEditing(true)}>Tahrirlash</button>
       </div>
     );
   }

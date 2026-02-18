@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useStore } from '../store';
 import { 
   Chart as ChartJS, 
@@ -14,7 +14,9 @@ import {
 } from 'chart.js';
 import { Line, Doughnut } from 'react-chartjs-2';
 import { format, subDays, isWithinInterval, startOfDay, endOfDay } from 'date-fns';
-import { TrendingUp, AlertTriangle, CheckCircle, Info } from 'lucide-react';
+import { TrendingUp, AlertTriangle, CheckCircle, Info, FileDown } from 'lucide-react';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 import './Analytics.css';
 
 ChartJS.register(
@@ -31,6 +33,7 @@ ChartJS.register(
 
 const Analytics: React.FC = () => {
   const { glucoseLogs, theme } = useStore();
+  const [isLoading, setIsLoading] = useState(false);
 
   // Statistics Calculation
   const stats = useMemo(() => {
@@ -128,6 +131,27 @@ const Analytics: React.FC = () => {
     }
   };
 
+  const exportToPDF = async () => {
+    const element = document.getElementById('analytics-content');
+    if (!element) return;
+
+    setIsLoading(true);
+    const canvas = await html2canvas(element, {
+      scale: 2,
+      backgroundColor: theme === 'dark' ? '#0f172a' : '#f8fafc',
+    });
+    
+    const imgData = canvas.toDataURL('image/png');
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    const imgProps = pdf.getImageProperties(imgData);
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+    
+    pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+    pdf.save('Glucobalance_Hisobot.pdf');
+    setIsLoading(false);
+  };
+
   if (glucoseLogs.length === 0) {
     return (
       <div className="analytics-container empty">
@@ -141,9 +165,12 @@ const Analytics: React.FC = () => {
   }
 
   return (
-    <div className="analytics-container">
+    <div className="analytics-container" id="analytics-content">
       <header className="page-header">
         <h1>Tahlil va Trendlar</h1>
+        <button className="btn-secondary" onClick={exportToPDF} disabled={isLoading}>
+          <FileDown size={18} /> {isLoading ? 'Yuklanmoqda...' : 'Hisobotni yuklab olish'}
+        </button>
       </header>
 
       <div className="analytics-grid">
