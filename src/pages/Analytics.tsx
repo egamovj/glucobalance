@@ -14,7 +14,7 @@ import {
 } from 'chart.js';
 import { Line, Doughnut } from 'react-chartjs-2';
 import { format, subDays, isWithinInterval, startOfDay, endOfDay } from 'date-fns';
-import { TrendingUp, AlertTriangle, CheckCircle, Info, FileDown } from 'lucide-react';
+import { TrendingUp, AlertTriangle, CheckCircle, Info, FileDown, Sparkles } from 'lucide-react';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import './Analytics.css';
@@ -86,6 +86,57 @@ const Analytics: React.FC = () => {
       ]
     };
   }, [glucoseLogs]);
+
+  // AI Insights Logic
+  const aiInsights = useMemo(() => {
+    if (glucoseLogs.length < 5) return [];
+    const insights = [];
+
+    // 1. Persistent High Trend (Last 3 days average > 10)
+    const last3Days = Array.from({ length: 3 }, (_, i) => {
+      const date = subDays(new Date(), i);
+      const dayLogs = glucoseLogs.filter(log => 
+        isWithinInterval(new Date(log.timestamp), { start: startOfDay(date), end: endOfDay(date) })
+      );
+      return dayLogs.length > 0 ? dayLogs.reduce((a, b) => a + b.value, 0) / dayLogs.length : null;
+    }).filter(v => v !== null);
+
+    if (last3Days.length >= 3 && last3Days.every(v => v! > 10)) {
+      insights.push({
+        type: 'warning',
+        title: 'Barqaror yuqori trend',
+        message: 'Oxirgi 3 kunda qand miqdori baland bo\'lmoqda. Parhezni ko\'rib chiqing yoki shifokor bilan maslahatlashib doza miqdorini aniqlashtiring.',
+        icon: <TrendingUp size={20} />
+      });
+    }
+
+    // 2. Morning High (Dawn Phenomenon)
+    const morningLogs = glucoseLogs.filter(log => {
+      const hour = new Date(log.timestamp).getHours();
+      return hour >= 5 && hour <= 8;
+    });
+
+    if (morningLogs.length >= 3 && (morningLogs.reduce((a, b) => a + b.value, 0) / morningLogs.length) > 7.0) {
+      insights.push({
+        type: 'info',
+        title: 'Tonggi giperglikemiya',
+        message: 'Ertalabki qand miqdori yuqori chiqmoqda. Kechki ovqat vaqtini yoki kechki uzoq ta\'sir qiluvchi insulin dozasini tekshiring.',
+        icon: <Sparkles size={20} />
+      });
+    }
+
+    // 3. Excellent Stability
+    if (stats && (stats.normal / stats.total) > 0.8) {
+      insights.push({
+        type: 'success',
+        title: 'Ajoyib barqarorlik!',
+        message: 'O\'lcho\'vlarining 80% dan ortig\'i me\'yorida. Shunday davom eting!',
+        icon: <CheckCircle size={20} />
+      });
+    }
+
+    return insights;
+  }, [glucoseLogs, stats]);
 
   // Doughnut Chart Data
   const doughnutData = useMemo(() => {
@@ -172,6 +223,29 @@ const Analytics: React.FC = () => {
           <FileDown size={18} /> {isLoading ? 'Yuklanmoqda...' : 'Hisobotni yuklab olish'}
         </button>
       </header>
+
+      <section className="ai-insights-section">
+        <div className="section-title">
+          <Sparkles size={20} color="var(--primary)" />
+          <h3>AI Tavsiyalari</h3>
+        </div>
+        <div className="insights-grid">
+          {aiInsights.length > 0 ? aiInsights.map((insight, i) => (
+            <div key={i} className={`card insight-card glass ${insight.type}`}>
+              <div className="insight-icon">{insight.icon}</div>
+              <div className="insight-text">
+                <h4>{insight.title}</h4>
+                <p>{insight.message}</p>
+              </div>
+            </div>
+          )) : (
+            <div className="card insight-card glass empty-insight">
+              <Info size={20} color="var(--text-muted)" />
+              <p>Hozircha yangi tavsiyalar yo'q. Ma'lumotlar yig'ilishda davom etmoqda.</p>
+            </div>
+          )}
+        </div>
+      </section>
 
       <div className="analytics-grid">
         {/* Weekly Trend Chart */}
