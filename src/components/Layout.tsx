@@ -21,7 +21,9 @@ const Layout: React.FC = () => {
       {/* Desktop Sidebar */}
       <aside className="sidebar glass desktop-only">
         <div className="sidebar-logo">
-          <div className="logo-icon"><Activity size={24} color="white" /></div>
+          <div className="logo-icon">
+            <img src="/logo.svg" alt="Glucobalance Logo" width="24" height="24" />
+          </div>
           <h2>Glucobalance</h2>
         </div>
         
