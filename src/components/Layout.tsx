@@ -1,9 +1,21 @@
-import React from 'react';
-import { NavLink, Outlet } from 'react-router-dom';
-import { User, Activity, AlertCircle, BookOpen, Heart, Home, Calculator } from 'lucide-react';
+import { useNavigate, NavLink, Outlet } from 'react-router-dom';
+import { User, Activity, AlertCircle, BookOpen, Heart, Home, Calculator, LogOut } from 'lucide-react';
+import { auth } from '../firebase';
+import { signOut } from 'firebase/auth';
 import './Layout.css';
 
 const Layout: React.FC = () => {
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      navigate('/login');
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  };
+
   return (
     <div className="app-container">
       <aside className="sidebar glass">
@@ -43,8 +55,12 @@ const Layout: React.FC = () => {
         <div className="sidebar-footer">
           <NavLink to="/profile" className="sidebar-profile-link">
             <User size={20} />
-            <span> Mening profilim</span>
+            <span>Mening profilim</span>
           </NavLink>
+          <button onClick={handleLogout} className="sidebar-logout-btn">
+            <LogOut size={20} />
+            <span>Chiqish</span>
+          </button>
         </div>
       </aside>
 

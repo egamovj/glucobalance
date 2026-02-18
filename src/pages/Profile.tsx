@@ -4,10 +4,10 @@ import { User, Activity, Ruler, Weight, Calendar, Heart, Shield } from 'lucide-r
 import './Profile.css';
 
 const Profile: React.FC = () => {
-  const { profile, setProfile } = useStore();
+  const { profile, setProfile, user } = useStore();
   const [isEditing, setIsEditing] = useState(!profile);
   const [formData, setFormData] = useState(profile || {
-    name: '',
+    name: user?.displayName || '',
     birthDate: '',
     gender: 'male',
     weight: 70,
