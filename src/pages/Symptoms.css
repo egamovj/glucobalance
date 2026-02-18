@@ -1,0 +1,122 @@
+.symptoms-container {
+  display: grid;
+  grid-template-columns: 1fr 1.5fr;
+  gap: 32px;
+  align-items: start;
+}
+
+.page-header h1 {
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.symptom-selector {
+  padding: 32px;
+}
+
+.symptom-selector h3 {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.subtitle {
+  font-size: 15px;
+  color: var(--text-muted);
+  margin-bottom: 24px;
+}
+
+.symptom-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.symptom-btn {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(0,0,0,0.04);
+  background: var(--bg-main);
+  color: var(--text-main);
+  transition: var(--transition);
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.symptom-btn:hover {
+  background: #f1f5f9;
+}
+
+.symptom-btn.active {
+  background: var(--primary-soft);
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.circle-placeholder {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--text-soft);
+  border-radius: 50%;
+  transition: var(--transition);
+}
+
+.symptom-btn.active .circle-placeholder {
+  border-color: var(--primary);
+  background: var(--primary);
+  box-shadow: inset 0 0 0 4px var(--primary-soft);
+}
+
+.symptom-log-item {
+  padding: 20px 24px;
+  margin-bottom: 12px;
+}
+
+.count-badge {
+  background: var(--primary-soft);
+  color: var(--primary);
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.symptom-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.symptom-tag {
+  background: #f1f5f9;
+  padding: 6px 14px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-main);
+}
+
+.promo-card.glass {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 24px;
+  align-items: center;
+  padding: 32px;
+  background: linear-gradient(to right, var(--primary-soft), white);
+}
+
+.promo-content h4 {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.promo-content p {
+  color: var(--text-muted);
+}

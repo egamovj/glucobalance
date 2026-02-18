@@ -1,0 +1,130 @@
+.academy-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.search-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  margin-bottom: 8px;
+}
+
+.search-bar input {
+  border: none;
+  background: none;
+  width: 100%;
+  font-size: 16px;
+  color: var(--text-main);
+  outline: none;
+}
+
+.featured-card {
+  background: linear-gradient(135deg, var(--primary), #1d4ed8);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  color: white;
+  position: relative;
+  overflow: hidden;
+}
+
+.featured-card::after {
+  content: '';
+  position: absolute;
+  top: -20px;
+  right: -20px;
+  width: 100px;
+  height: 100px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 50%;
+}
+
+.featured-badge {
+  background: rgba(255,255,255,0.2);
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  display: inline-block;
+  margin-bottom: 12px;
+}
+
+.featured-content h2 {
+  font-size: 20px;
+  margin-bottom: 8px;
+}
+
+.featured-content p {
+  font-size: 14px;
+  opacity: 0.9;
+  margin-bottom: 20px;
+  line-height: 1.5;
+}
+
+.featured-content .btn-primary {
+  background: white;
+  color: var(--primary);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.article-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 12px;
+  padding: 16px;
+}
+
+.article-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: var(--bg-main);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.article-info {
+  flex: 1;
+}
+
+.article-category {
+  font-size: 10px;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--primary);
+  letter-spacing: 0.05em;
+}
+
+.article-info h4 {
+  font-size: 15px;
+  margin: 4px 0;
+}
+
+.article-meta {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.quiz-promo {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  border-radius: var(--radius-lg);
+  margin-top: 10px;
+}
+
+.quiz-promo h4 {
+  font-size: 15px;
+  margin-bottom: 2px;
+}
+
+.quiz-promo p {
+  font-size: 12px;
+  color: var(--text-muted);
+}

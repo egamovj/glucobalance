@@ -1,0 +1,159 @@
+.healthy-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.tab-switcher {
+  display: flex;
+  padding: 4px;
+  border-radius: var(--radius-md);
+  gap: 4px;
+}
+
+.tab-switcher button {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  background: none;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.tab-switcher button.active {
+  background: var(--bg-card);
+  color: var(--primary);
+  box-shadow: var(--shadow-sm);
+}
+
+.promo-card-mini {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  background: var(--primary-glow);
+  border-radius: var(--radius-md);
+  margin-bottom: 20px;
+}
+
+.exercise-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.ex-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ex-info h4 {
+  font-size: 15px;
+  margin-bottom: 2px;
+}
+
+.ex-info span {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.music-player {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.now-playing {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 32px;
+  text-align: center;
+}
+
+.album-art {
+  width: 120px;
+  height: 120px;
+  background: linear-gradient(45deg, var(--primary), var(--success));
+  border-radius: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 24px;
+  box-shadow: 0 10px 30px var(--primary-glow);
+}
+
+.player-controls {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  margin: 24px 0;
+}
+
+.play-btn {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: white;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 8px 16px var(--primary-glow);
+}
+
+.icon-btn {
+  background: none;
+  border: none;
+  color: var(--text-main);
+  cursor: pointer;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 4px;
+  background: rgba(0,0,0,0.1);
+  border-radius: 2px;
+}
+
+.progress {
+  height: 100%;
+  background: var(--primary);
+  border-radius: 2px;
+}
+
+.playlist-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+
+.track-info {
+  flex: 1;
+}
+
+.track-info p {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.track-info span {
+  font-size: 11px;
+  color: var(--text-muted);
+}
