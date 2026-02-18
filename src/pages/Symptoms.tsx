@@ -35,7 +35,7 @@ const Symptoms: React.FC = () => {
 
     addSymptom(entry);
     setSelectedSymptoms([]);
-    alert('Simptomlar muvaffaqiyatli saqlandi!');
+    // Success feedback is handled by the updated history list
   };
 
   return (
@@ -55,14 +55,14 @@ const Symptoms: React.FC = () => {
               className={`symptom-btn ${selectedSymptoms.includes(s.id) ? 'active' : ''}`}
               onClick={() => toggleSymptom(s.id)}
             >
-              {selectedSymptoms.includes(s.id) ? <CheckCircle2 size={18} /> : <div className="circle-placeholder" />}
               {s.label}
+              {selectedSymptoms.includes(s.id) ? <CheckCircle2 size={18} /> : <div className="circle-placeholder" />}
             </button>
           ))}
         </div>
 
         <button 
-          className="btn-primary w-full save-btn" 
+          className="btn-primary save-btn" 
           disabled={selectedSymptoms.length === 0}
           onClick={handleSave}
         >

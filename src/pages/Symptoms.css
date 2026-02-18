@@ -12,7 +12,7 @@
 }
 
 .symptom-selector {
-  padding: 32px;
+  padding: 40px;
 }
 
 .symptom-selector h3 {
@@ -37,8 +37,8 @@
 .symptom-btn {
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 16px 20px;
+  justify-content: space-between;
+  padding: 18px 24px;
   border-radius: var(--radius-md);
   border: 1px solid rgba(0,0,0,0.04);
   background: var(--bg-main);
@@ -50,13 +50,15 @@
 }
 
 .symptom-btn:hover {
-  background: #f1f5f9;
+  background: var(--primary-soft);
+  border-color: var(--primary-glow);
 }
 
 .symptom-btn.active {
-  background: var(--primary-soft);
-  border-color: var(--primary);
-  color: var(--primary);
+  background: linear-gradient(135deg, var(--primary), #0f766e);
+  border-color: transparent;
+  color: white;
+  box-shadow: 0 12px 24px -6px var(--primary-glow);
 }
 
 .circle-placeholder {
@@ -68,9 +70,9 @@
 }
 
 .symptom-btn.active .circle-placeholder {
-  border-color: var(--primary);
-  background: var(--primary);
-  box-shadow: inset 0 0 0 4px var(--primary-soft);
+  border-color: white;
+  background: white;
+  box-shadow: inset 0 0 0 4px var(--primary);
 }
 
 .symptom-log-item {
@@ -94,29 +96,59 @@
 }
 
 .symptom-tag {
-  background: #f1f5f9;
-  padding: 6px 14px;
+  background: var(--primary-soft);
+  padding: 8px 16px;
   border-radius: 10px;
   font-size: 13px;
-  font-weight: 500;
-  color: var(--text-main);
+  font-weight: 600;
+  color: var(--primary);
 }
 
 .promo-card.glass {
   grid-column: 1 / -1;
   display: flex;
-  gap: 24px;
+  gap: 32px;
   align-items: center;
-  padding: 32px;
-  background: linear-gradient(to right, var(--primary-soft), white);
+  padding: 40px;
+  background: linear-gradient(to right, var(--primary-soft), var(--bg-card));
+  border: 1px solid var(--primary-glow);
+  position: relative;
+  overflow: hidden;
+}
+
+.promo-card::after {
+  content: '';
+  position: absolute;
+  bottom: -40px;
+  right: -20px;
+  width: 120px;
+  height: 120px;
+  background: var(--primary-glow);
+  border-radius: 50%;
+  filter: blur(35px);
 }
 
 .promo-content h4 {
-  font-size: 18px;
-  font-weight: 700;
-  margin-bottom: 4px;
+  font-size: 20px;
+  font-weight: 800;
+  margin-bottom: 8px;
+  color: var(--primary);
 }
 
 .promo-content p {
   color: var(--text-muted);
+  font-size: 15px;
+  margin-bottom: 24px;
+  max-width: 450px;
+}
+
+[data-theme='dark'] .promo-card.glass {
+  background: linear-gradient(to right, rgba(13, 148, 136, 0.15), var(--bg-card));
+}
+
+.save-btn {
+  width: auto;
+  min-width: 200px;
+  margin: 0 auto;
+  display: flex;
 }

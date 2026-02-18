@@ -1,12 +1,17 @@
-.calc-container {
-  display: grid;
-  grid-template-columns: 1.2fr 1fr;
-  gap: 32px;
-  align-items: start;
+.page-header {
+  grid-column: 1 / -1;
+  margin-bottom: 32px;
+}
+
+.page-header h1 {
+  font-size: 32px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
 }
 
 .calculator-card {
   padding: 40px;
+  border: 1px solid rgba(0,0,0,0.02);
 }
 
 .results-grid {
@@ -33,10 +38,11 @@
 }
 
 .result-item p {
-  font-size: 24px;
+  font-size: 32px;
   font-weight: 800;
   margin-top: 4px;
-  color: var(--text-main);
+  color: var(--primary);
+  letter-spacing: -0.01em;
 }
 
 .final-result {
@@ -86,20 +92,76 @@
 }
 
 .food-chips .chip {
-  padding: 12px 20px;
-  border-radius: 14px;
-  background: white;
+  padding: 14px 24px;
+  border-radius: var(--radius-md);
+  background: var(--bg-card);
+  border: 1px solid rgba(0,0,0,0.04);
   box-shadow: var(--shadow-sm);
   font-weight: 600;
   font-size: 14px;
-}
-
-.chip:hover {
-  color: var(--primary);
-  border-color: var(--primary);
-}
-
-[data-theme='dark'] .chip {
-  background: rgba(255,255,255,0.03);
   color: var(--text-main);
+}
+
+.promo-card {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  padding: 40px;
+  background: linear-gradient(to right, var(--primary-soft), var(--bg-card));
+  border: 1px solid var(--primary-glow);
+  position: relative;
+  overflow: hidden;
+}
+
+.promo-card::after {
+  content: '';
+  position: absolute;
+  top: -50px;
+  right: -50px;
+  width: 150px;
+  height: 150px;
+  background: var(--primary-glow);
+  border-radius: 50%;
+  filter: blur(40px);
+}
+
+.promo-content h4 {
+  font-size: 20px;
+  font-weight: 800;
+  margin-bottom: 8px;
+  color: var(--primary);
+}
+
+.promo-content p {
+  color: var(--text-muted);
+  font-size: 15px;
+  margin-bottom: 24px;
+  max-width: 400px;
+}
+
+.text-btn {
+  background: var(--primary);
+  color: white;
+  border: none;
+  padding: 12px 28px;
+  border-radius: 14px;
+  font-weight: 700;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 15px -2px var(--primary-glow);
+}
+
+.text-btn:hover {
+  filter: brightness(1.1);
+  transform: translateX(8px);
+  box-shadow: 0 8px 25px -4px var(--primary-glow);
+}
+
+[data-theme='dark'] .promo-card {
+  background: linear-gradient(to right, rgba(13, 148, 136, 0.15), var(--bg-card));
 }
