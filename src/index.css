@@ -73,6 +73,13 @@ body {
   padding: 32px 48px;
   max-width: 1400px;
   width: 100%;
+  transition: var(--transition);
+}
+
+@media (max-width: 768px) {
+  .content-wrapper {
+    padding: 16px 16px 100px 16px; /* Added bottom padding for mobile nav */
+  }
 }
 
 .glass {
@@ -179,4 +186,16 @@ body {
 @keyframes rotation {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
+
+/* Mobile Utilities */
+.mobile-only { display: none; }
+@media (max-width: 768px) {
+  .mobile-only { display: block; }
+  .desktop-only { display: none; }
+  
+  .card {
+    padding: 16px;
+    border-radius: var(--radius-md);
+  }
 }

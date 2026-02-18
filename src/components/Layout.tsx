@@ -18,7 +18,8 @@ const Layout: React.FC = () => {
 
   return (
     <div className="app-container">
-      <aside className="sidebar glass">
+      {/* Desktop Sidebar */}
+      <aside className="sidebar glass desktop-only">
         <div className="sidebar-logo">
           <div className="logo-icon"><Activity size={24} color="white" /></div>
           <h2>Glucobalance</h2>
@@ -72,13 +73,34 @@ const Layout: React.FC = () => {
         </div>
       </aside>
 
+      {/* Mobile Bottom Navigation */}
+      <nav className="mobile-nav mobile-only glass">
+        <NavLink to="/" className={({ isActive }) => `mobile-nav-item ${isActive ? 'active' : ''}`}>
+          <Home size={24} />
+          <span>Asosiy</span>
+        </NavLink>
+        <NavLink to="/glucose" className={({ isActive }) => `mobile-nav-item ${isActive ? 'active' : ''}`}>
+          <Activity size={24} />
+          <span>Log</span>
+        </NavLink>
+        <NavLink to="/analytics" className={({ isActive }) => `mobile-nav-item ${isActive ? 'active' : ''}`}>
+          <PieChart size={24} />
+          <span>Tahlil</span>
+        </NavLink>
+        <NavLink to="/healthy" className={({ isActive }) => `mobile-nav-item ${isActive ? 'active' : ''}`}>
+          <Heart size={24} />
+          <span>Hayot</span>
+        </NavLink>
+        <NavLink to="/profile" className={({ isActive }) => `mobile-nav-item ${isActive ? 'active' : ''}`}>
+          <User size={24} />
+          <span>Profil</span>
+        </NavLink>
+      </nav>
+
       <div className="content-wrapper">
-        <header className="top-header">
+        <header className="top-header desktop-only">
            <div className="header-search">
              <input type="text" placeholder="Qidiruv..." />
-           </div>
-           <div className="header-actions">
-             {/* Theme toggle will be here or in App.tsx */}
            </div>
         </header>
         <main className="content-area">
