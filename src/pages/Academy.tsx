@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, PlayCircle, BookOpen, ChevronRight, HelpCircle } from 'lucide-react';
+import { Search, PlayCircle, BookOpen, ChevronRight, HelpCircle, Info } from 'lucide-react';
 import './Academy.css';
 
 const Academy: React.FC = () => {
@@ -48,6 +48,40 @@ const Academy: React.FC = () => {
     a.category.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const diagnostics = [
+    {
+      title: 'Och qoringa qon tahlili',
+      description: '8–10 soat ovqat yemay topshiriladi.',
+      levels: [
+        { range: '3.3 – 5.5 mmol/L', status: 'Me\'yor', color: 'var(--success)' },
+        { range: '5.6 – 6.9 mmol/L', status: 'Xavf (prediabet)', color: 'var(--warning)' },
+        { range: '7.0+ mmol/L', status: 'Diabet ehtimoli', color: 'var(--error)' }
+      ]
+    },
+    {
+      title: 'Ovqatdan 2 soat keyin',
+      description: 'Ovqatdan keyin qand miqdori o\'zgarishini tekshirish.',
+      levels: [
+        { range: '7.8 mmol/L gacha', status: 'Me\'yor', color: 'var(--success)' },
+        { range: '11.1+ mmol/L', status: 'Diabet ehtimoli', color: 'var(--error)' }
+      ]
+    },
+    {
+      title: 'HbA1c (Glokirlangan gemoglobin)',
+      description: 'Oxirgi 3 oylik o\'rtacha qand darajasi.',
+      levels: [
+        { range: '6.0% gacha', status: 'Me\'yor', color: 'var(--success)' },
+        { range: '6.0 – 6.4%', status: 'Xavf (prediabet)', color: 'var(--warning)' },
+        { range: '6.5%+ ', status: 'Diabet', color: 'var(--error)' }
+      ]
+    },
+    {
+      title: 'S-Peptid tahlili',
+      description: 'Diabet turini (1 yoki 2) aniqlash uchun.',
+      customNote: 'Kam bo\'lsa: 1-tur. Ko\'p bo\'lsa: 2-tur.'
+    }
+  ];
+
   return (
     <div className="academy-container">
       <header className="page-header">
@@ -64,12 +98,35 @@ const Academy: React.FC = () => {
         />
       </div>
 
-      <section className="featured-card">
-        <div className="featured-content">
-          <span className="featured-badge">Yangi dars</span>
-          <h2>Insulin turlari va ularni qo'llash</h2>
-          <p>Glyukoza darajasini to'g'ri boshqarish uchun insulin haqida bilishingiz kerak bo'lgan hamma narsa.</p>
-          <button className="btn-primary">Boshlash</button>
+      <section className="diagnostics-section">
+        <div className="section-title">
+          <HelpCircle size={20} color="var(--primary)" />
+          <h3>Diagnostika me'yorlari</h3>
+        </div>
+        <div className="diag-grid">
+          {diagnostics.map((diag, i) => (
+            <div key={i} className="card diag-card glass">
+              <h4>{diag.title}</h4>
+              <p className="diag-desc">{diag.description}</p>
+              {diag.levels ? (
+                <div className="diag-levels">
+                  {diag.levels.map((lvl, j) => (
+                    <div key={j} className="diag-level-item">
+                      <span className="diag-range">{lvl.range}</span>
+                      <span className="diag-status" style={{ color: lvl.color, background: `${lvl.color}15` }}>
+                        {lvl.status}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="diag-custom-note glass">
+                  <Info size={16} color="var(--primary)" />
+                  <span>{diag.customNote}</span>
+                </div>
+              )}
+            </div>
+          ))}
         </div>
       </section>
 
