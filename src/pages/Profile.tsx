@@ -21,7 +21,14 @@ const Profile: React.FC = () => {
   });
 
   useEffect(() => {
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+    if (isStandalone) {
+      console.log('App is already running in standalone mode');
+      return;
+    }
+
     const handleBeforeInstallPrompt = (e: Event) => {
+      console.log('PWA: beforeinstallprompt event fired');
       e.preventDefault();
       setDeferredPrompt(e);
     };

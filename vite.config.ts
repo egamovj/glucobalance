@@ -8,7 +8,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
+      includeAssets: ['logo.svg'], // Removed non-existent favicon.ico and others
       manifest: {
         name: 'Glucobalance - Diabet Nazorati',
         short_name: 'Glucobalance',
@@ -18,32 +18,34 @@ export default defineConfig({
         display: 'standalone',
         icons: [
           {
-            src: 'vite.svg',
+            src: 'logo.svg',
             sizes: '192x192',
-            type: 'image/svg+xml'
+            type: 'image/svg+xml',
+            purpose: 'any'
           },
           {
-            src: 'vite.svg',
-            sizes: '512x512',
-            type: 'image/svg+xml'
-          },
-          {
-            src: 'vite.svg',
+            src: 'logo.svg',
             sizes: '512x512',
             type: 'image/svg+xml',
-            purpose: 'any maskable'
+            purpose: 'any'
+          },
+          {
+            src: 'logo.svg',
+            sizes: '512x512',
+            type: 'image/svg+xml',
+            purpose: 'maskable'
           }
         ]
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
+        globPatterns: ['**/*.{js,css,html,svg,png,ico}'],
         cleanupOutdatedCaches: true,
         clientsClaim: true,
         skipWaiting: true,
       },
       devOptions: {
         enabled: true,
-        type: 'classic',
+        type: 'module', // Changed to module
       }
     })
   ],
