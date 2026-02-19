@@ -1,11 +1,16 @@
+import { useState } from 'react';
 import { useNavigate, NavLink, Outlet } from 'react-router-dom';
-import { User, Activity, AlertCircle, BookOpen, Heart, Home, Calculator, LogOut, PieChart, Utensils } from 'lucide-react';
+import { 
+  User, Activity, AlertCircle, BookOpen, Heart, Home, 
+  Calculator, LogOut, PieChart, Utensils, Menu, X 
+} from 'lucide-react';
 import { auth } from '../firebase';
 import { signOut } from 'firebase/auth';
 import './Layout.css';
 
 const Layout: React.FC = () => {
   const navigate = useNavigate();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const handleLogout = async () => {
     try {
@@ -14,6 +19,14 @@ const Layout: React.FC = () => {
     } catch (error) {
       console.error('Logout error:', error);
     }
+  };
+
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen);
+  };
+
+  const closeMobileMenu = () => {
+    setIsMobileMenuOpen(false);
   };
 
   return (
@@ -75,28 +88,67 @@ const Layout: React.FC = () => {
         </div>
       </aside>
 
+      {/* Mobile Drawer Overlay */}
+      <div className={`mobile-drawer-overlay mobile-only ${isMobileMenuOpen ? 'open' : ''}`} onClick={closeMobileMenu}>
+        <div className={`mobile-drawer ${isMobileMenuOpen ? 'open' : ''}`} onClick={(e) => e.stopPropagation()}>
+          <div className="drawer-header">
+            <h3>Menyu</h3>
+            <button className="close-btn" onClick={closeMobileMenu}>
+              <X size={24} />
+            </button>
+          </div>
+          <div className="drawer-content">
+             <NavLink to="/calculator" className="drawer-item" onClick={closeMobileMenu}>
+              <Calculator size={20} />
+              <span>Kalkulyator</span>
+            </NavLink>
+            <NavLink to="/symptoms" className="drawer-item" onClick={closeMobileMenu}>
+              <AlertCircle size={20} />
+              <span>Simptomlar</span>
+            </NavLink>
+            <NavLink to="/food-gi" className="drawer-item" onClick={closeMobileMenu}>
+              <Utensils size={20} />
+              <span>GI Katalog</span>
+            </NavLink>
+            <NavLink to="/academy" className="drawer-item" onClick={closeMobileMenu}>
+              <BookOpen size={20} />
+              <span>Akademiya</span>
+            </NavLink>
+            <NavLink to="/profile" className="drawer-item" onClick={closeMobileMenu}>
+              <User size={20} />
+              <span>Profil</span>
+            </NavLink>
+            <div className="drawer-divider"></div>
+            <button onClick={handleLogout} className="drawer-item logout-item">
+              <LogOut size={20} />
+              <span>Chiqish</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
       {/* Mobile Bottom Navigation */}
       <nav className="mobile-nav mobile-only glass">
-        <NavLink to="/" className={({ isActive }) => `mobile-nav-item ${isActive ? 'active' : ''}`}>
+        <NavLink to="/" className={({ isActive }) => `mobile-nav-item ${isActive ? 'active' : ''}`} onClick={closeMobileMenu}>
           <Home size={24} />
           <span>Asosiy</span>
         </NavLink>
-        <NavLink to="/glucose" className={({ isActive }) => `mobile-nav-item ${isActive ? 'active' : ''}`}>
+        <NavLink to="/glucose" className={({ isActive }) => `mobile-nav-item ${isActive ? 'active' : ''}`} onClick={closeMobileMenu}>
           <Activity size={24} />
           <span>Log</span>
         </NavLink>
-        <NavLink to="/analytics" className={({ isActive }) => `mobile-nav-item ${isActive ? 'active' : ''}`}>
+        <NavLink to="/analytics" className={({ isActive }) => `mobile-nav-item ${isActive ? 'active' : ''}`} onClick={closeMobileMenu}>
           <PieChart size={24} />
           <span>Tahlil</span>
         </NavLink>
-        <NavLink to="/healthy" className={({ isActive }) => `mobile-nav-item ${isActive ? 'active' : ''}`}>
+        <NavLink to="/healthy" className={({ isActive }) => `mobile-nav-item ${isActive ? 'active' : ''}`} onClick={closeMobileMenu}>
           <Heart size={24} />
           <span>Hayot</span>
         </NavLink>
-        <NavLink to="/profile" className={({ isActive }) => `mobile-nav-item ${isActive ? 'active' : ''}`}>
-          <User size={24} />
-          <span>Profil</span>
-        </NavLink>
+        <button className={`mobile-nav-item btn-clear ${isMobileMenuOpen ? 'active' : ''}`} onClick={toggleMobileMenu}>
+          <Menu size={24} />
+          <span>Menyu</span>
+        </button>
       </nav>
 
       <div className="content-wrapper">
