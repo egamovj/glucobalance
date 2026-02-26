@@ -2,15 +2,18 @@ import { useState } from 'react';
 import { useNavigate, NavLink, Outlet } from 'react-router-dom';
 import { 
   User, Activity, AlertCircle, BookOpen, Heart, Home, 
-  Calculator, LogOut, PieChart, Utensils, Menu, X 
+  Calculator, LogOut, PieChart, Utensils, Menu, X, Shield 
 } from 'lucide-react';
 import { auth } from '../firebase';
 import { signOut } from 'firebase/auth';
+import { useStore } from '../store';
 import './Layout.css';
 
 const Layout: React.FC = () => {
   const navigate = useNavigate();
+  const { profile } = useStore();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const isAdmin = profile?.role === 'admin';
 
   const handleLogout = async () => {
     try {
@@ -74,6 +77,15 @@ const Layout: React.FC = () => {
             <Heart size={20} />
             <span>Sog'lom hayot</span>
           </NavLink>
+          {isAdmin && (
+            <>
+              <div className="nav-divider">Boshqaruv</div>
+              <NavLink to="/admin" className={({ isActive }) => `sidebar-item ${isActive ? 'active' : ''}`}>
+                <Shield size={20} />
+                <span>Admin Panel</span>
+              </NavLink>
+            </>
+          )}
         </nav>
 
         <div className="sidebar-footer">
@@ -118,6 +130,12 @@ const Layout: React.FC = () => {
               <User size={20} />
               <span>Profil</span>
             </NavLink>
+            {isAdmin && (
+              <NavLink to="/admin" className="drawer-item" onClick={closeMobileMenu}>
+                <Shield size={20} />
+                <span>Admin Panel</span>
+              </NavLink>
+            )}
             <div className="drawer-divider"></div>
             <button onClick={handleLogout} className="drawer-item logout-item">
               <LogOut size={20} />
@@ -140,6 +158,10 @@ const Layout: React.FC = () => {
         <NavLink to="/analytics" className={({ isActive }) => `mobile-nav-item ${isActive ? 'active' : ''}`} onClick={closeMobileMenu}>
           <PieChart size={24} />
           <span>Tahlil</span>
+        </NavLink>
+        <NavLink to="/healthy" className={({ isActive }) => `mobile-nav-item ${isActive ? 'active' : ''}`} onClick={closeMobileMenu}>
+          <Heart size={24} />
+          <span>Hayot</span>
         </NavLink>
         <NavLink to="/healthy" className={({ isActive }) => `mobile-nav-item ${isActive ? 'active' : ''}`} onClick={closeMobileMenu}>
           <Heart size={24} />

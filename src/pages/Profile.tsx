@@ -17,7 +17,8 @@ const Profile: React.FC = () => {
     targetGlucose: 5.5,
     sensitivity: 2.0,
     nanInsulin: 1.0,
-    doctorNotes: ''
+    doctorNotes: '',
+    role: 'user'
   });
 
   useEffect(() => {

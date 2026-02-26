@@ -14,6 +14,7 @@ interface UserProfile {
   sensitivity: number;
   nanInsulin: number;
   doctorNotes?: string;
+  role: 'user' | 'admin';
 }
 
 interface AppState {
@@ -27,6 +28,10 @@ interface AppState {
   addGlucoseLog: (log: any) => void;
   symptoms: any[];
   addSymptom: (symptom: any) => void;
+  lessons: any[];
+  fetchLessons: () => Promise<void>;
+  addLesson: (lesson: any) => Promise<void>;
+  seedLessons: (initialLessons: any[]) => Promise<void>;
   syncFromFirestore: (userId: string) => Promise<void>;
   theme: "light" | "dark";
   toggleTheme: () => void;
@@ -34,23 +39,25 @@ interface AppState {
 
 export const useStore = create<AppState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       user: null,
       loading: true,
       setUser: (user) => set({ user, loading: false }),
       setLoading: (loading) => set({ loading }),
       profile: null,
       setProfile: async (profile) => {
-        set({ profile });
-        const user = useStore.getState().user;
+        const currentProfile = get().profile;
+        const updatedProfile = { ...profile, role: currentProfile?.role || profile.role || 'user' };
+        set({ profile: updatedProfile });
+        const user = get().user;
         if (user) {
-          await setDoc(doc(db, "profiles", user.uid), profile);
+          await setDoc(doc(db, "profiles", user.uid), updatedProfile);
         }
       },
       glucoseLogs: [],
       addGlucoseLog: async (log) => {
         set((state) => ({ glucoseLogs: [log, ...state.glucoseLogs] }));
-        const user = useStore.getState().user;
+        const user = get().user;
         if (user) {
           await setDoc(doc(db, "logs", `${user.uid}_${log.id}`), { ...log, userId: user.uid });
         }
@@ -58,12 +65,38 @@ export const useStore = create<AppState>()(
       symptoms: [],
       addSymptom: async (symptom) => {
         set((state) => ({ symptoms: [symptom, ...state.symptoms] }));
-        const user = useStore.getState().user;
+        const user = get().user;
         if (user) {
           await setDoc(doc(db, "symptoms", `${user.uid}_${symptom.id}`), { ...symptom, userId: user.uid });
         }
       },
-      syncFromFirestore: async (userId) => {
+      lessons: [],
+      fetchLessons: async () => {
+        const lessonsRef = collection(db, "academy_lessons");
+        const q = query(lessonsRef, orderBy("createdAt", "asc"));
+        const snap = await getDocs(q);
+        const lessons = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        set({ lessons });
+      },
+      addLesson: async (lesson) => {
+        const newDoc = doc(collection(db, "academy_lessons"));
+        const lessonData = { ...lesson, id: newDoc.id, createdAt: Date.now() };
+        await setDoc(newDoc, lessonData);
+        set(state => ({ lessons: [...state.lessons, lessonData] }));
+      },
+      seedLessons: async (initialLessons) => {
+        for (const lesson of initialLessons) {
+          const newDoc = doc(collection(db, "academy_lessons"));
+          const lessonData = { ...lesson, id: newDoc.id, createdAt: Date.now() };
+          await setDoc(newDoc, lessonData);
+        }
+        const lessonsRef = collection(db, "academy_lessons");
+        const q = query(lessonsRef, orderBy("createdAt", "asc"));
+        const snap = await getDocs(q);
+        const lessons = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        set({ lessons });
+      },
+      syncFromFirestore: async (userId: string) => {
         // Sync Profile
         const profDoc = await getDoc(doc(db, "profiles", userId));
         if (profDoc.exists()) {

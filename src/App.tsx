@@ -16,7 +16,8 @@ import FoodGI from './pages/FoodGI';
 import Dashboard from './pages/Dashboard';
 import Login from './pages/Login';
 import Register from './pages/Register';
-import { Sun, Moon } from 'lucide-react';
+import AdminDashboard from './pages/AdminDashboard';
+import { Sun, Moon, ShieldAlert } from 'lucide-react';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, loading } = useStore();
@@ -28,6 +29,29 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
   );
   
   if (!user) return <Navigate to="/login" />;
+  return <>{children}</>;
+};
+
+const AdminRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { profile, loading } = useStore();
+  
+  if (loading) return (
+    <div className="loading-screen">
+      <div className="loader"></div>
+    </div>
+  );
+  
+  if (profile?.role !== 'admin') {
+    return (
+      <div className="access-denied glass-morphism" style={{ padding: '40px', textAlign: 'center' }}>
+        <ShieldAlert size={48} color="var(--error)" style={{ marginBottom: '16px' }} />
+        <h2>Kirish cheklangan</h2>
+        <p style={{ color: 'var(--text-muted)', marginTop: '12px' }}>Ushbu sahifa faqat administratorlar uchun.</p>
+        <button className="btn-primary" style={{ marginTop: '24px' }} onClick={() => window.location.href = '/'}>Bosh sahifaga qaytish</button>
+      </div>
+    );
+  }
+  
   return <>{children}</>;
 };
 
@@ -72,6 +96,7 @@ function App() {
             <Route path="food-gi" element={<FoodGI />} />
             <Route path="calculator" element={<Calculator />} />
             <Route path="profile" element={<Profile />} />
+            <Route path="admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
             <Route path="*" element={<Navigate to="/" />} />
           </Route>
         </Routes>
