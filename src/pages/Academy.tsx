@@ -63,20 +63,33 @@ const Academy: React.FC = () => {
         </button>
 
         <article className="lesson-full-content">
+          {selectedArticle.videoUrl ? (
+            <div className="video-container">
+              {selectedArticle.videoUrl.includes('youtube.com') || selectedArticle.videoUrl.includes('youtu.be') ? (
+                <iframe 
+                  src={selectedArticle.videoUrl.replace('watch?v=', 'embed/').split('&')[0]} 
+                  title={selectedArticle.title}
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                ></iframe>
+              ) : (
+                <video src={selectedArticle.videoUrl} controls poster={selectedArticle.imageUrl}></video>
+              )}
+            </div>
+          ) : selectedArticle.imageUrl ? (
+            <div className="lesson-hero-image">
+              <img src={selectedArticle.imageUrl} alt={selectedArticle.title} />
+            </div>
+          ) : null}
+
           <header className="lesson-header">
             <span className="article-category">{selectedArticle.category}</span>
             <h1>{selectedArticle.title}</h1>
             <div className="article-meta">
-              {selectedArticle.duration} • {selectedArticle.type === 'video' ? 'Video dars' : 'Mutolaa darsi'}
+              {selectedArticle.duration} • {selectedArticle.videoUrl ? 'Video dars' : 'Mutolaa darsi'}
             </div>
           </header>
-
-          {selectedArticle.type === 'video' && (
-            <div className="video-placeholder">
-              <PlayCircle size={48} color="white" />
-              <span>Video tez kunda qo'shiladi</span>
-            </div>
-          )}
 
           <div 
             className="article-text-content"
@@ -177,13 +190,19 @@ const Academy: React.FC = () => {
               onClick={() => setSelectedArticle(article)}
               style={{ cursor: 'pointer' }}
             >
-              <div className="article-icon">
-                {article.type === 'video' ? <PlayCircle size={24} color="var(--primary)" /> : <BookOpen size={24} color="var(--success)" />}
+              <div className="article-image-preview">
+                {article.imageUrl ? (
+                  <img src={article.imageUrl} alt={article.title} />
+                ) : (
+                  <div className="article-icon-fallback">
+                    {article.videoUrl ? <PlayCircle size={24} color="var(--primary)" /> : <BookOpen size={24} color="var(--success)" />}
+                  </div>
+                )}
               </div>
               <div className="article-info">
                 <span className="article-category">{article.category}</span>
                 <h4>{article.title}</h4>
-                <span className="article-meta">{article.duration} • {article.type === 'video' ? 'Video' : 'Maqola'}</span>
+                <span className="article-meta">{article.duration} • {article.videoUrl ? 'Video' : 'Maqola'}</span>
               </div>
               <ChevronRight size={20} color="var(--text-muted)" />
             </div>

@@ -1,7 +1,8 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { db } from "./firebase";
-import { doc, getDoc, setDoc, collection, query, where, getDocs, orderBy, limit } from "firebase/firestore";
+import { db, storage } from "./firebase";
+import { doc, getDoc, setDoc, deleteDoc, collection, query, where, getDocs, orderBy, limit } from "firebase/firestore";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 interface UserProfile {
   name: string;
@@ -31,6 +32,9 @@ interface AppState {
   lessons: any[];
   fetchLessons: () => Promise<void>;
   addLesson: (lesson: any) => Promise<void>;
+  updateLesson: (id: string, lesson: any) => Promise<void>;
+  deleteLesson: (id: string) => Promise<void>;
+  uploadImage: (file: File) => Promise<string>;
   seedLessons: (initialLessons: any[]) => Promise<void>;
   syncFromFirestore: (userId: string) => Promise<void>;
   theme: "light" | "dark";
@@ -83,6 +87,25 @@ export const useStore = create<AppState>()(
         const lessonData = { ...lesson, id: newDoc.id, createdAt: Date.now() };
         await setDoc(newDoc, lessonData);
         set(state => ({ lessons: [...state.lessons, lessonData] }));
+      },
+      updateLesson: async (id, lesson) => {
+        const lessonRef = doc(db, "academy_lessons", id);
+        await setDoc(lessonRef, { ...lesson, id }, { merge: true });
+        set(state => ({
+          lessons: state.lessons.map(l => l.id === id ? { ...l, ...lesson } : l)
+        }));
+      },
+      deleteLesson: async (id) => {
+        const lessonRef = doc(db, "academy_lessons", id);
+        await deleteDoc(lessonRef);
+        set(state => ({
+          lessons: state.lessons.filter(l => l.id !== id)
+        }));
+      },
+      uploadImage: async (file: File) => {
+        const storageRef = ref(storage, `lessons/${Date.now()}_${file.name}`);
+        const snapshot = await uploadBytes(storageRef, file);
+        return await getDownloadURL(snapshot.ref);
       },
       seedLessons: async (initialLessons) => {
         for (const lesson of initialLessons) {

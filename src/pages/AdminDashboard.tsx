@@ -1,36 +1,112 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { 
   BookOpen, Activity, Music, PlusCircle, Save, 
-  ChevronRight, ShieldCheck, Database
+  ChevronRight, ShieldCheck, Database, Trash2, Edit2, Undo2, Image, Video,
+  Upload, Loader
 } from 'lucide-react';
 import { useStore } from '../store';
 import './AdminDashboard.css';
 
 const AdminDashboard: React.FC = () => {
-  const { lessons, addLesson, seedLessons } = useStore();
+  const { lessons, addLesson, updateLesson, deleteLesson, uploadImage, seedLessons } = useStore();
   const [activeTab, setActiveTab] = useState<'academy' | 'exercises' | 'music'>('academy');
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
-  // Lesson state (from Academy.tsx)
+  // Lesson state
   const [newLesson, setNewLesson] = useState({
     title: '',
     category: 'Asoslar',
     duration: '',
     type: 'text',
-    content: ''
+    content: '',
+    imageUrl: '',
+    videoUrl: ''
   });
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setIsUploading(true);
+      const url = await uploadImage(file);
+      setNewLesson(prev => ({ ...prev, imageUrl: url }));
+      alert("Rasm muvaffaqiyatli yuklandi!");
+    } catch (error) {
+      console.error("Upload failed:", error);
+      alert("Rasmni yuklashda xatolik yuz berdi!");
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   const handleAddLesson = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newLesson.title || !newLesson.content) return;
-    await addLesson(newLesson);
+
+    try {
+      if (editingId) {
+        await updateLesson(editingId, newLesson);
+        setEditingId(null);
+        alert("Dars muvaffaqiyatli yangilandi!");
+      } else {
+        await addLesson(newLesson);
+        alert("Dars muvaffaqiyatli qo'shildi!");
+      }
+
+      setNewLesson({
+        title: '',
+        category: 'Asoslar',
+        duration: '',
+        type: 'text',
+        content: '',
+        imageUrl: '',
+        videoUrl: ''
+      });
+    } catch (error) {
+      console.error("Operation failed:", error);
+      alert("Xatolik yuz berdi!");
+    }
+  };
+
+  const startEdit = (lesson: any) => {
+    setEditingId(lesson.id);
+    setNewLesson({
+      title: lesson.title,
+      category: lesson.category,
+      duration: lesson.duration,
+      type: lesson.type,
+      content: lesson.content,
+      imageUrl: lesson.imageUrl || '',
+      videoUrl: lesson.videoUrl || ''
+    });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
     setNewLesson({
       title: '',
       category: 'Asoslar',
       duration: '',
       type: 'text',
-      content: ''
+      content: '',
+      imageUrl: '',
+      videoUrl: ''
     });
-    alert("Dars muvaffaqiyatli qo'shildi!");
+  };
+
+  const handleDelete = async (id: string, title: string) => {
+    if (confirm(`"${title}" darsini o'chirib tashlamoqchimisiz?`)) {
+      try {
+        await deleteLesson(id);
+      } catch (error) {
+        console.error("Delete failed:", error);
+        alert("O'chirishda xatolik yuz berdi!");
+      }
+    }
   };
 
   const handleSeed = async () => {
@@ -45,8 +121,7 @@ const AdminDashboard: React.FC = () => {
             <h3>Qandli diabet haqida umumiy tushuncha</h3>
             <p>Qandli diabet — bu organizmda glyukoza (qand) miqdorining surunkali ravishda oshib ketishi bilan bog'liq kasallikdir...</p>
           `
-        },
-        // ... more can be added/imported
+        }
       ];
       await seedLessons(initialArticles as any);
       alert("Darslar yuklandi!");
@@ -92,14 +167,17 @@ const AdminDashboard: React.FC = () => {
           {activeTab === 'academy' && (
             <div className="admin-section animate-in">
               <div className="section-header">
-                <h2><BookOpen size={22} /> Akademiya boshqaruvi</h2>
+                <h2><BookOpen size={22} /> Akademiya boshqaruvi ({lessons.length})</h2>
                 <button className="btn-secondary btn-sm" onClick={handleSeed}>
                   <Database size={16} /> Birlamchi darslar
                 </button>
               </div>
 
               <div className="card admin-form-card glass">
-                <h3><PlusCircle size={18} /> Yangi dars qo'shish</h3>
+                <h3>
+                  {editingId ? <Edit2 size={18} /> : <PlusCircle size={18} />} 
+                  {editingId ? 'Darsni tahrirlash' : 'Yangi dars qo\'shish'}
+                </h3>
                 <form onSubmit={handleAddLesson} className="admin-form">
                   <div className="form-group">
                     <label>Dars nomi</label>
@@ -122,6 +200,8 @@ const AdminDashboard: React.FC = () => {
                         <option value="Parhez">Parhez</option>
                         <option value="Davolash">Davolash</option>
                         <option value="Turmush tarzi">Turmush tarzi</option>
+                        <option value="Hisoblash">Hisoblash</option>
+                        <option value="Favqulodda">Favqulodda</option>
                       </select>
                     </div>
                     <div className="form-group">
@@ -135,6 +215,60 @@ const AdminDashboard: React.FC = () => {
                       />
                     </div>
                   </div>
+                  
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '4px', justifyContent: 'space-between' }}>
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Image size={14} /> Rasm URL (ixtiyoriy)</span>
+                        <button 
+                          type="button" 
+                          className="btn-text-sm" 
+                          onClick={() => fileInputRef.current?.click()}
+                          disabled={isUploading}
+                        >
+                          {isUploading ? <Loader size={12} className="animate-spin" /> : <Upload size={12} />}
+                          Kompyuterdan yuklash
+                        </button>
+                        <input 
+                          type="file" 
+                          ref={fileInputRef} 
+                          onChange={handleImageUpload} 
+                          accept="image/*" 
+                          style={{ display: 'none' }} 
+                        />
+                      </label>
+                      <input 
+                        type="text" 
+                        placeholder="https://..."
+                        value={newLesson.imageUrl}
+                        onChange={e => setNewLesson({...newLesson, imageUrl: e.target.value})}
+                      />
+                      {newLesson.imageUrl && (
+                        <div className="admin-image-preview-wrapper animate-in">
+                          <img src={newLesson.imageUrl} alt="Preview" className="admin-image-preview" />
+                          <button 
+                            type="button" 
+                            className="btn-icon-sm delete preview-remove"
+                            onClick={() => setNewLesson({...newLesson, imageUrl: ''})}
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                    <div className="form-group">
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <Video size={14} /> Video URL (ixtiyoriy)
+                      </label>
+                      <input 
+                        type="text" 
+                        placeholder="YouTube link..."
+                        value={newLesson.videoUrl}
+                        onChange={e => setNewLesson({...newLesson, videoUrl: e.target.value})}
+                      />
+                    </div>
+                  </div>
+
                   <div className="form-group">
                     <label>Mazmuni (HTML)</label>
                     <textarea 
@@ -145,22 +279,46 @@ const AdminDashboard: React.FC = () => {
                       rows={8}
                     />
                   </div>
-                  <button type="submit" className="btn-primary">
-                    <Save size={18} /> Saqlash
-                  </button>
+                  <div className="form-actions">
+                    <button type="submit" className="btn-primary">
+                      <Save size={18} /> {editingId ? 'Yangilash' : 'Saqlash'}
+                    </button>
+                    {editingId && (
+                      <button type="button" className="btn-secondary" onClick={cancelEdit}>
+                        <Undo2 size={18} /> Bekor qilish
+                      </button>
+                    )}
+                  </div>
                 </form>
               </div>
 
               <div className="active-items-list">
-                <h3>Mavjud darslar ({lessons.length})</h3>
+                <h3>Mavjud darslar</h3>
                 <div className="items-grid">
                   {lessons.map(lesson => (
                     <div key={lesson.id} className="item-card glass">
-                      <div className="item-info">
-                        <h4>{lesson.title}</h4>
-                        <span className="badge">{lesson.category}</span>
+                      <div className="item-main-info">
+                        <div className="item-thumbnail">
+                          {lesson.imageUrl ? (
+                            <img src={lesson.imageUrl} alt="" />
+                          ) : (
+                            <BookOpen size={16} color="var(--primary)" />
+                          )}
+                        </div>
+                        <div className="item-info">
+                          <h4>{lesson.title}</h4>
+                          <span className="badge">{lesson.category}</span>
+                        </div>
                       </div>
-                      <ChevronRight size={18} color="var(--text-muted)" />
+                      <div className="item-actions">
+                        <button className="btn-icon-sm edit" onClick={() => startEdit(lesson)} title="Tahrirlash">
+                          <Edit2 size={16} />
+                        </button>
+                        <button className="btn-icon-sm delete" onClick={() => handleDelete(lesson.id, lesson.title)} title="O'chirish">
+                          <Trash2 size={16} />
+                        </button>
+                        <ChevronRight size={18} color="var(--text-muted)" style={{ marginLeft: '4px' }} />
+                      </div>
                     </div>
                   ))}
                 </div>
