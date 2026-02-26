@@ -81,7 +81,7 @@
   align-items: center;
   gap: 20px;
   padding: 16px 0;
-  border-bottom: 1px solid rgba(0,0,0,0.03);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.03);
 }
 
 .info-item:last-child {
@@ -155,19 +155,21 @@
   opacity: 0.8;
 }
 
-[data-theme='dark'] .form-section-card {
+[data-theme="dark"] .form-section-card {
   background: rgba(13, 148, 136, 0.1);
   border-color: rgba(13, 148, 136, 0.2);
 }
 
-[data-theme='dark'] .form-section-card h3,
-[data-theme='dark'] .form-section-card label {
+[data-theme="dark"] .form-section-card h3,
+[data-theme="dark"] .form-section-card label {
   color: #5eead4; /* Lighter teal for dark mode */
 }
 
-.input-group input, .input-group select, .input-group textarea {
+.input-group input,
+.input-group select,
+.input-group textarea {
   background: var(--bg-main);
-  border: 1px solid rgba(0,0,0,0.08);
+  border: 1px solid rgba(0, 0, 0, 0.08);
   padding: 14px 20px;
   font-size: 15px;
   border-radius: var(--radius-md);
@@ -181,9 +183,9 @@
   box-shadow: 0 0 0 4px var(--primary-glow);
 }
 
-[data-theme='dark'] .input-group input,
-[data-theme='dark'] .input-group select,
-[data-theme='dark'] .input-group textarea {
+[data-theme="dark"] .input-group input,
+[data-theme="dark"] .input-group select,
+[data-theme="dark"] .input-group textarea {
   border-color: rgba(255, 255, 255, 0.1);
 }
 
@@ -234,26 +236,47 @@
   .profile-container {
     grid-template-columns: 1fr;
   }
-  
+
   .profile-header {
     flex-direction: column;
     text-align: center;
     padding: 30px 20px;
   }
-  
+
   .avatar {
     width: 70px;
     height: 70px;
     font-size: 28px;
   }
-  
+
   .install-card {
     flex-direction: column;
     gap: 20px;
     text-align: center;
   }
-  
+
   .install-content {
     flex-direction: column;
+  }
+
+  .profile-form {
+    grid-template-columns: 1fr;
+    padding: 24px 16px;
+    gap: 20px;
+  }
+
+  .form-section-card {
+    grid-template-columns: 1fr;
+    padding: 20px;
+    gap: 16px;
+  }
+
+  .input-row {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .profile-form .btn-primary {
+    width: 100%;
   }
 }
