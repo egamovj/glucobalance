@@ -7,7 +7,7 @@
 }
 
 .profile-header {
-  background: linear-gradient(135deg, rgba(15, 23, 42, 0.9), rgba(30, 41, 59, 0.8));
+  background: linear-gradient(135deg, #0f172a, #1e293b);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -18,7 +18,12 @@
   gap: 40px;
   position: relative;
   overflow: hidden;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme='light'] .profile-header {
+  background: linear-gradient(135deg, var(--primary), #14b8a6);
+  box-shadow: 0 25px 50px -12px rgba(13, 148, 136, 0.2);
 }
 
 .profile-header::before {
@@ -75,12 +80,17 @@
 }
 
 .stat-card {
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(255, 255, 255, 0.6);
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(0, 0, 0, 0.05);
   border-radius: 24px;
   padding: 28px;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+[data-theme='dark'] .stat-card {
+  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(255, 255, 255, 0.05);
 }
 
 .stat-card:hover {
@@ -110,19 +120,27 @@
   font-weight: 800;
   margin: 0;
   color: var(--text-main);
-  background: linear-gradient(to bottom right, #fff, rgba(255,255,255,0.7));
+}
+
+[data-theme='dark'] .stat-card p {
+  background: linear-gradient(to bottom right, #fff, rgba(255, 255, 255, 0.7));
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
 .info-list {
-  background: rgba(255, 255, 255, 0.02);
+  background: rgba(255, 255, 255, 0.5);
   backdrop-filter: blur(15px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(0, 0, 0, 0.05);
   border-radius: 28px;
   padding: 32px;
   margin-bottom: 0;
+}
+
+[data-theme='dark'] .info-list {
+  background: rgba(255, 255, 255, 0.02);
+  border-color: rgba(255, 255, 255, 0.05);
 }
 
 .settings-item {
@@ -130,7 +148,11 @@
   align-items: center;
   justify-content: space-between;
   padding: 20px 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+[data-theme='dark'] .settings-item {
+  border-bottom-color: rgba(255, 255, 255, 0.05);
 }
 
 .settings-item:last-child {
@@ -150,7 +172,11 @@
   align-items: center;
   gap: 20px;
   padding: 20px 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+[data-theme='dark'] .info-item {
+  border-bottom-color: rgba(255, 255, 255, 0.05);
 }
 
 .info-item:last-child {
