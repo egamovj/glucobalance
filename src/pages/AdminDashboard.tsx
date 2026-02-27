@@ -1,19 +1,23 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { 
-  BookOpen, Activity, Music, PlusCircle, Save, 
+  BookOpen, Activity, PlusCircle, Save, 
   ChevronRight, ShieldCheck, Database, Trash2, Edit2, Undo2, Image, Video,
-  Upload, Loader
+  Upload, Loader, Play
 } from 'lucide-react';
 import { useStore } from '../store';
 import './AdminDashboard.css';
 
 const AdminDashboard: React.FC = () => {
-  const { lessons, addLesson, updateLesson, deleteLesson, uploadImage, seedLessons } = useStore();
-  const [activeTab, setActiveTab] = useState<'academy' | 'exercises' | 'music'>('academy');
+  const { 
+    lessons, addLesson, updateLesson, deleteLesson, 
+    exercises, fetchExercises, addExercise, updateExercise, deleteExercise,
+    uploadImage, seedLessons, seedExercises 
+  } = useStore();
+  const [activeTab, setActiveTab] = useState<'academy' | 'exercises'>('academy');
   const [editingId, setEditingId] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
-  const fileInputRef = useRef<HTMLInputElement>(null);
   
   // Lesson state
   const [newLesson, setNewLesson] = useState({
@@ -25,6 +29,21 @@ const AdminDashboard: React.FC = () => {
     imageUrl: '',
     videoUrl: ''
   });
+
+  // Exercise state
+  const [newExercise, setNewExercise] = useState({
+    title: '',
+    duration: '',
+    level: 'Oson' as 'O\'rta' | 'Qiyin' | 'Oson',
+    videoId: '',
+    thumbnail: '',
+    color: '#3b82f6'
+  });
+
+
+  useEffect(() => {
+    fetchExercises();
+  }, [fetchExercises]);
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -110,6 +129,7 @@ const AdminDashboard: React.FC = () => {
     });
   };
 
+
   const handleDelete = async (id: string, title: string) => {
     if (confirm(`"${title}" darsini o'chirib tashlamoqchimisiz?`)) {
       try {
@@ -140,6 +160,88 @@ const AdminDashboard: React.FC = () => {
     }
   };
 
+  const handleAddExercise = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newExercise.title || !newExercise.videoId) return;
+
+    try {
+      if (editingId) {
+        await updateExercise(editingId, newExercise);
+        setEditingId(null);
+        alert("Mashq muvaffaqiyatli yangilandi!");
+      } else {
+        // Auto-generate thumbnail from videoId
+        const exerciseWithThumb = {
+          ...newExercise,
+          thumbnail: `https://img.youtube.com/vi/${newExercise.videoId}/maxresdefault.jpg`
+        };
+        await addExercise(exerciseWithThumb);
+        alert("Mashq muvaffaqiyatli qo'shildi!");
+      }
+
+      setNewExercise({
+        title: '',
+        duration: '',
+        level: 'Oson',
+        videoId: '',
+        thumbnail: '',
+        color: '#3b82f6'
+      });
+    } catch (error) {
+      console.error("Exercise operation failed:", error);
+      alert("Xatolik yuz berdi!");
+    }
+  };
+
+  const startEditExercise = (ex: any) => {
+    setEditingId(ex.id);
+    setNewExercise({
+      title: ex.title,
+      duration: ex.duration,
+      level: ex.level,
+      videoId: ex.videoId,
+      thumbnail: ex.thumbnail || '',
+      color: ex.color || '#3b82f6'
+    });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleDeleteExercise = async (id: string, title: string) => {
+    if (confirm(`"${title}" mashqini o'chirib tashlamoqchimisiz?`)) {
+      try {
+        await deleteExercise(id);
+      } catch (error) {
+        console.error("Delete failed:", error);
+        alert("O'chirishda xatolik yuz berdi!");
+      }
+    }
+  };
+
+  const handleSeedExercises = async () => {
+    if (confirm("Birlamchi mashqlarni yuklamoqchimisiz?")) {
+      const initialExercises = [
+        { 
+          title: 'Diabet uchun 10 daqiqalik kardiomashq', 
+          duration: '10 daqiqa', 
+          level: 'Oson', 
+          color: '#3b82f6',
+          videoId: 'hJbRpHZr_d0', 
+          thumbnail: 'https://img.youtube.com/vi/hJbRpHZr_d0/maxresdefault.jpg'
+        },
+        { 
+          title: 'Yoga: Qon shakarini tushirish uchun', 
+          duration: '20 daqiqa', 
+          level: 'Oson', 
+          color: '#10b981',
+          videoId: 'o_bC40d4hKs', 
+          thumbnail: 'https://img.youtube.com/vi/o_bC40d4hKs/maxresdefault.jpg'
+        }
+      ];
+      await seedExercises(initialExercises as any);
+      alert("Mashqlar yuklandi!");
+    }
+  };
+
   return (
     <div className="admin-dashboard-container">
       <header className="page-header">
@@ -165,13 +267,6 @@ const AdminDashboard: React.FC = () => {
           >
             <Activity size={20} />
             <span>Mashqlar</span>
-          </button>
-          <button 
-            className={`tab-item ${activeTab === 'music' ? 'active' : ''}`}
-            onClick={() => setActiveTab('music')}
-          >
-            <Music size={20} />
-            <span>Musiqa</span>
           </button>
         </aside>
 
@@ -349,20 +444,123 @@ const AdminDashboard: React.FC = () => {
 
           {activeTab === 'exercises' && (
             <div className="admin-section animate-in">
-              <div className="placeholder-content glass">
-                <Activity size={48} color="var(--primary)" opacity={0.5} />
-                <h3>Mashqlar bo'limi</h3>
-                <p>Tez kunda: Salomatlik uchun foydali mashqlarni boshqarish imkoniyati qo'shiladi.</p>
+              <div className="section-header">
+                <h2><Activity size={22} /> Mashqlar boshqaruvi ({exercises.length})</h2>
+                <button className="btn-secondary btn-sm" onClick={handleSeedExercises}>
+                  <Database size={16} /> Birlamchi mashqlar
+                </button>
               </div>
-            </div>
-          )}
 
-          {activeTab === 'music' && (
-            <div className="admin-section animate-in">
-              <div className="placeholder-content glass">
-                <Music size={48} color="var(--primary)" opacity={0.5} />
-                <h3>Musiqa bo'limi</h3>
-                <p>Tez kunda: Relaksatsiya va meditatsiya musiqalarini boshqarish imkoniyati qo'shiladi.</p>
+              <div className="card admin-form-card glass">
+                <h3>
+                  {editingId ? <Edit2 size={18} /> : <PlusCircle size={18} />} 
+                  {editingId ? 'Mashqni tahrirlash' : 'Yangi mashq qo\'shish'}
+                </h3>
+                <form onSubmit={handleAddExercise} className="admin-form">
+                  <div className="form-group">
+                    <label>Mashq nomi</label>
+                    <input 
+                      type="text" 
+                      placeholder="Mashq sarlavhasi"
+                      value={newExercise.title}
+                      onChange={e => setNewExercise({...newExercise, title: e.target.value})}
+                      required
+                    />
+                  </div>
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>Murakkablik darajasi</label>
+                      <select 
+                        value={newExercise.level}
+                        onChange={e => setNewExercise({...newExercise, level: e.target.value as any})}
+                      >
+                        <option value="Oson">Oson</option>
+                        <option value="O'rta">O'rta</option>
+                        <option value="Qiyin">Qiyin</option>
+                      </select>
+                    </div>
+                    <div className="form-group">
+                      <label>Davomiyligi</label>
+                      <input 
+                        type="text" 
+                        placeholder="Masalan: 10 daqiqa"
+                        value={newExercise.duration}
+                        onChange={e => setNewExercise({...newExercise, duration: e.target.value})}
+                        required
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>YouTube Video ID</label>
+                      <input 
+                        type="text" 
+                        placeholder="Masalan: hJbRpHZr_d0"
+                        value={newExercise.videoId}
+                        onChange={e => setNewExercise({...newExercise, videoId: e.target.value})}
+                        required
+                      />
+                      <small style={{ color: 'var(--text-muted)', fontSize: '11px', marginTop: '4px' }}>
+                        YouTube linkining oxiridagi kod (v= dan keyingi qism)
+                      </small>
+                    </div>
+                    <div className="form-group">
+                      <label>Tema rangi</label>
+                      <input 
+                        type="color" 
+                        value={newExercise.color}
+                        onChange={e => setNewExercise({...newExercise, color: e.target.value})}
+                        style={{ height: '42px', padding: '4px' }}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="form-actions">
+                    <button type="submit" className="btn-primary">
+                      <Save size={18} /> {editingId ? 'Yangilash' : 'Saqlash'}
+                    </button>
+                    {editingId && (
+                      <button type="button" className="btn-secondary" onClick={() => { setEditingId(null); setNewExercise({ title: '', duration: '', level: 'Oson', videoId: '', thumbnail: '', color: '#3b82f6' }); }}>
+                        <Undo2 size={18} /> Bekor qilish
+                      </button>
+                    )}
+                  </div>
+                </form>
+              </div>
+
+              <div className="active-items-list">
+                <h3>Mavjud mashqlar</h3>
+                <div className="items-grid">
+                  {exercises.map(ex => (
+                    <div key={ex.id} className="item-card glass">
+                      <div className="item-main-info">
+                        <div className="item-thumbnail">
+                          <img src={ex.thumbnail} alt="" />
+                          <div className="play-hint"><Play size={12} fill="white" /></div>
+                        </div>
+                        <div className="item-info">
+                          <h4>{ex.title}</h4>
+                          <span className="badge" style={{ backgroundColor: ex.color + '20', color: ex.color }}>{ex.level} • {ex.duration}</span>
+                        </div>
+                      </div>
+                      <div className="item-actions">
+                        <button className="btn-icon-sm edit" onClick={() => startEditExercise(ex)} title="Tahrirlash">
+                          <Edit2 size={16} />
+                        </button>
+                        <button className="btn-icon-sm delete" onClick={() => handleDeleteExercise(ex.id, ex.title)} title="O'chirish">
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                  {exercises.length === 0 && (
+                    <div className="empty-state">
+                      <Activity size={32} opacity={0.3} />
+                      <p>Mashqlar hali qo'shilmagan</p>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           )}

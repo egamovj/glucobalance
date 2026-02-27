@@ -138,7 +138,7 @@
 .play-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(0,0,0,0.3);
+  background: rgba(0, 0, 0, 0.3);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -169,42 +169,105 @@
   color: var(--text-muted);
 }
 
+/* Meditation Player UI */
 .music-player {
   display: flex;
   flex-direction: column;
   gap: 24px;
 }
 
-.now-playing {
+.meditation-player {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 32px;
+  padding: 48px 32px;
   text-align: center;
+  gap: 32px;
+  border-radius: var(--radius-lg);
+  position: relative;
+  overflow: hidden;
 }
 
-.album-art {
-  width: 120px;
-  height: 120px;
-  background: linear-gradient(45deg, var(--primary), var(--success));
-  border-radius: 24px;
+.meditation-art-container {
+  position: relative;
+  width: 160px;
+  height: 160px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 24px;
-  box-shadow: 0 10px 30px var(--primary-glow);
 }
 
-.player-controls {
+.meditation-art {
+  width: 120px;
+  height: 120px;
+  background: linear-gradient(135deg, var(--primary), #8b5cf6);
+  border-radius: 40px;
   display: flex;
   align-items: center;
-  gap: 32px;
-  margin: 24px 0;
+  justify-content: center;
+  box-shadow: 0 10px 40px rgba(13, 148, 136, 0.3);
+  z-index: 2;
+  position: relative;
 }
 
-.play-btn {
-  width: 64px;
-  height: 64px;
+.meditation-art.pulsing {
+  animation: med-pulse 4s ease-in-out infinite;
+}
+
+@keyframes med-pulse {
+  0% { transform: scale(1); box-shadow: 0 10px 40px rgba(13, 148, 136, 0.3); }
+  50% { transform: scale(1.05); box-shadow: 0 15px 60px rgba(13, 148, 136, 0.5); }
+  100% { transform: scale(1); box-shadow: 0 10px 40px rgba(13, 148, 136, 0.3); }
+}
+
+.visualizer-rings {
+  position: absolute;
+  inset: -20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+}
+
+.ring {
+  position: absolute;
+  border: 2px solid var(--primary-glow);
+  border-radius: 50%;
+  animation: ring-expand 3s linear infinite;
+  opacity: 0;
+}
+
+.ring:nth-child(2) { animation-delay: 1s; }
+.ring:nth-child(3) { animation-delay: 2s; }
+
+@keyframes ring-expand {
+  0% { width: 120px; height: 120px; opacity: 0.8; }
+  100% { width: 200px; height: 200px; opacity: 0; border-width: 1px; }
+}
+
+.now-playing-header h3 {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--text-main);
+  margin-bottom: 8px;
+  letter-spacing: -0.5px;
+}
+
+.now-playing-header p {
+  font-size: 16px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.meditation-controls {
+  display: flex;
+  align-items: center;
+  gap: 40px;
+}
+
+.play-btn-main {
+  width: 72px;
+  height: 72px;
   border-radius: 50%;
   background: var(--primary);
   color: white;
@@ -213,85 +276,115 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  box-shadow: 0 8px 16px var(--primary-glow);
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 0 10px 25px var(--primary-glow);
+}
+
+.play-btn-main:hover {
+  transform: scale(1.1);
+  box-shadow: 0 15px 35px var(--primary-glow);
 }
 
 .icon-btn {
   background: none;
   border: none;
-  color: var(--text-main);
+  color: var(--text-muted);
   cursor: pointer;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.progress-container {
-  width: 100%;
-  padding: 0 20px;
-  margin-top: 10px;
+.icon-btn:hover {
+  color: var(--primary);
+  transform: scale(1.1);
 }
 
-.progress-bar {
-  width: 100%;
-  height: 6px;
-  background: rgba(0,0,0,0.05);
-  border-radius: 3px;
-  overflow: hidden;
+.hidden-audio-frame {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
 }
 
-.progress {
-  height: 100%;
-  background: linear-gradient(to right, var(--primary), var(--secondary));
-  border-radius: 3px;
-  transition: width 0.1s linear;
-}
-
-.playlist-items {
+.playlist-section {
+  padding: 24px;
   display: flex;
   flex-direction: column;
+  gap: 20px;
 }
 
-.playlist-item {
+.playlist-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.playlist-header h4 {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.playlist-scroll {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.meditation-track-item {
   display: flex;
   align-items: center;
   gap: 16px;
-  padding: 16px;
+  padding: 14px;
   border-radius: var(--radius-md);
   cursor: pointer;
-  transition: var(--transition);
-  border-bottom: 1px solid rgba(0,0,0,0.02);
+  transition: all 0.2s;
+  border: 1px solid transparent;
 }
 
-.playlist-item:hover {
+.meditation-track-item:hover {
   background: var(--primary-soft);
+  transform: translateX(4px);
 }
 
-.playlist-item.active {
-  background: var(--primary-soft);
-  border-left: 4px solid var(--primary);
+.meditation-track-item.active {
+  background: var(--primary-glow);
+  border-color: var(--primary-soft);
 }
 
-.track-info {
+.track-icon-wrapper {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: var(--bg-body);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary);
+}
+
+.meditation-track-item.active .track-icon-wrapper {
+  background: var(--primary);
+  color: white;
+}
+
+.track-details {
   flex: 1;
 }
 
-.track-info p {
-  font-size: 14px;
+.track-details p {
+  font-size: 15px;
   font-weight: 600;
   color: var(--text-main);
+  margin-bottom: 2px;
 }
 
-.track-info span {
+.track-details span {
   font-size: 12px;
   color: var(--text-muted);
-}
-
-.animate-float {
-  animation: float 3s ease-in-out infinite;
-}
-
-@keyframes float {
-  0% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
-  100% { transform: translateY(0px); }
 }
 
 .playing-bars {
@@ -310,20 +403,26 @@
 .playing-bars span:nth-child(2) { animation-delay: 0.2s; }
 .playing-bars span:nth-child(3) { animation-delay: 0.4s; }
 
-.loader-mini {
-  width: 24px;
-  height: 24px;
-  border: 3px solid rgba(255,255,255,0.3);
-  border-radius: 50%;
-  border-top-color: white;
-  animation: spin 1s linear infinite;
+@keyframes bar-play {
+  0%, 100% { height: 4px; }
+  50% { height: 14px; }
 }
 
-@keyframes spin {
-  to { transform: rotate(360deg); }
+.animate-float {
+  animation: float 3s ease-in-out infinite;
 }
 
-.album-art.loading {
-  background: var(--primary-soft);
-  opacity: 0.7;
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
+  100% { transform: translateY(0px); }
+}
+
+.animate-in {
+  animation: slide-up 0.4s ease-out;
+}
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
 }

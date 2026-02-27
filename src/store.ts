@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { db, storage } from "./firebase";
+import { db } from "./firebase";
 import {
   doc,
   getDoc,
@@ -13,7 +13,6 @@ import {
   orderBy,
   limit,
 } from "firebase/firestore";
-import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 
 interface UserProfile {
   name: string;
@@ -28,6 +27,18 @@ interface UserProfile {
   doctorNotes?: string;
   role: "user" | "admin";
 }
+
+interface Exercise {
+  id: string;
+  title: string;
+  duration: string;
+  level: "Oson" | "O'rta" | "Qiyin";
+  videoId: string;
+  thumbnail: string;
+  color: string;
+  createdAt: number;
+}
+
 
 interface AppState {
   user: any | null;
@@ -45,8 +56,17 @@ interface AppState {
   addLesson: (lesson: any) => Promise<void>;
   updateLesson: (id: string, lesson: any) => Promise<void>;
   deleteLesson: (id: string) => Promise<void>;
-  uploadImage: (file: File, onProgress?: (progress: number) => void) => Promise<string>;
+  exercises: Exercise[];
+  fetchExercises: () => Promise<void>;
+  addExercise: (exercise: Omit<Exercise, "id" | "createdAt">) => Promise<void>;
+  updateExercise: (id: string, exercise: Partial<Exercise>) => Promise<void>;
+  deleteExercise: (id: string) => Promise<void>;
+  uploadImage: (
+    file: File,
+    onProgress?: (progress: number) => void,
+  ) => Promise<string>;
   seedLessons: (initialLessons: any[]) => Promise<void>;
+  seedExercises: (initialExercises: any[]) => Promise<void>;
   syncFromFirestore: (userId: string) => Promise<void>;
   theme: "light" | "dark";
   toggleTheme: () => void;
@@ -124,13 +144,57 @@ export const useStore = create<AppState>()(
           lessons: state.lessons.filter((l) => l.id !== id),
         }));
       },
-      uploadImage: async (file: File, onProgress?: (progress: number) => void) => {
+      exercises: [],
+      fetchExercises: async () => {
+        const exercisesRef = collection(db, "exercises");
+        const q = query(exercisesRef, orderBy("createdAt", "asc"));
+        const snap = await getDocs(q);
+        const exercises = snap.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        })) as Exercise[];
+        set({ exercises });
+      },
+      addExercise: async (exercise) => {
+        const newDoc = doc(collection(db, "exercises"));
+        const exerciseData = {
+          ...exercise,
+          id: newDoc.id,
+          createdAt: Date.now(),
+        };
+        await setDoc(newDoc, exerciseData);
+        set((state) => ({ exercises: [...state.exercises, exerciseData] }));
+      },
+      updateExercise: async (id, exercise) => {
+        const exerciseRef = doc(db, "exercises", id);
+        await setDoc(exerciseRef, { ...exercise, id }, { merge: true });
+        set((state) => ({
+          exercises: state.exercises.map((e) =>
+            e.id === id ? { ...e, ...exercise } : e,
+          ),
+        }));
+      },
+      deleteExercise: async (id) => {
+        const exerciseRef = doc(db, "exercises", id);
+        await deleteDoc(exerciseRef);
+        set((state) => ({
+          exercises: state.exercises.filter((e) => e.id !== id),
+        }));
+      },
+      uploadImage: async (
+        file: File,
+        onProgress?: (progress: number) => void,
+      ) => {
         return new Promise((resolve, reject) => {
           try {
-            console.log("Starting Base64 conversion (No Storage needed):", file.name, file.size);
-            
+            console.log(
+              "Starting Base64 conversion (No Storage needed):",
+              file.name,
+              file.size,
+            );
+
             const reader = new FileReader();
-            
+
             reader.onprogress = (event) => {
               if (event.lengthComputable && onProgress) {
                 const progress = (event.loaded / event.total) * 100;
@@ -152,7 +216,9 @@ export const useStore = create<AppState>()(
             reader.readAsDataURL(file);
           } catch (error: any) {
             console.error("uploadImage catch error:", error);
-            reject(new Error(error.message || "Yuklashda ichki xatolik yuz berdi."));
+            reject(
+              new Error(error.message || "Yuklashda ichki xatolik yuz berdi."),
+            );
           }
         });
       },
@@ -171,6 +237,25 @@ export const useStore = create<AppState>()(
         const snap = await getDocs(q);
         const lessons = snap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
         set({ lessons });
+      },
+      seedExercises: async (initialExercises) => {
+        for (const exercise of initialExercises) {
+          const newDoc = doc(collection(db, "exercises"));
+          const exerciseData = {
+            ...exercise,
+            id: newDoc.id,
+            createdAt: Date.now(),
+          };
+          await setDoc(newDoc, exerciseData);
+        }
+        const exercisesRef = collection(db, "exercises");
+        const q = query(exercisesRef, orderBy("createdAt", "asc"));
+        const snap = await getDocs(q);
+        const exercises = snap.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        })) as Exercise[];
+        set({ exercises });
       },
       syncFromFirestore: async (userId: string) => {
         // Sync Profile

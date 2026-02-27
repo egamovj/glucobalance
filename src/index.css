@@ -11,6 +11,7 @@
   --bg-main: #fbfcfb;
   --bg-sidebar: #ffffff;
   --bg-card: #ffffff;
+  --bg-card-rgb: 255, 255, 255;
   
   --text-main: #0f172a;
   --text-muted: #64748b;
@@ -37,6 +38,7 @@
   --bg-main: #020617;
   --bg-sidebar: #0f172a;
   --bg-card: #0f172a;
+  --bg-card-rgb: 15, 23, 42;
   
   --primary-soft: rgba(13, 148, 136, 0.1);
   --secondary-soft: rgba(16, 185, 129, 0.1);

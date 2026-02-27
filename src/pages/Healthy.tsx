@@ -1,49 +1,54 @@
 import React, { useState, useEffect } from 'react';
-import { Play, Pause, SkipForward, SkipBack, Dumbbell, Music, Wind, Globe } from 'lucide-react';
+import { Play, Pause, SkipForward, SkipBack, Dumbbell, Music, Wind, Globe, Loader2 } from 'lucide-react';
+import { useStore } from '../store';
 import './Healthy.css';
+
+const INITIAL_TRACKS = [
+  { 
+    id: '1', 
+    title: 'Sokin Tabiat', 
+    artist: 'Nature Recovery', 
+    url: 'https://youtu.be/eNUpTV9BGac?si=YHybxsPtc-SfCeRC' 
+  },
+  { 
+    id: '2', 
+    title: 'Chuqur Meditatsiya', 
+    artist: 'Zen Master', 
+    url: 'https://youtu.be/alU08EDp8dY?si=BhFTeKO_OYUPu1Qw' 
+  },
+  { 
+    id: '3', 
+    title: 'Relax Piano', 
+    artist: 'Soul Harmony', 
+    url: 'https://youtu.be/Cl1dyPcZo6s?si=sYNywdv7bXIwvf58' 
+  },
+  {
+    id: '4',
+    title: 'Koinot Sadosi',
+    artist: 'Astral Flow',
+    url: 'https://youtu.be/Q3CZtYHriRY?si=DPkYYyVUdsIiSklZ'
+  },
+  {
+    id: '4',
+    title: 'Rain & Birds',
+    artist: 'Astral Flow',
+    url: 'https://youtu.be/Lbl69TbpIzo?si=gofLyUizdaCkfeyG'
+  }
+];
 
 const Healthy: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'exercise' | 'music'>('exercise');
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
-  const [progress, setProgress] = useState(0);
-  const [isLoading, setIsLoading] = useState(false);
   const [selectedVideo, setSelectedVideo] = useState<string | null>(null);
-  const audioRef = React.useRef<HTMLAudioElement>(null);
+  const tracks = INITIAL_TRACKS;
 
-  const tracks = [
-    { title: 'Sokin tabiat sadosi', artist: 'Meditatsiya', url: 'https://www.chosic.com/wp-content/uploads/2021/07/The-Ambient-Breeze.mp3' },
-    { title: 'Tinchlantiruvchi piano', artist: 'Relaks', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3' },
-    { title: 'Yomg\'ir shirillashi', artist: 'Tabiat', url: 'https://www.chosic.com/wp-content/uploads/2021/07/Rain-on-Window.mp3' },
-    { title: 'Chuqur meditatsiya', artist: 'Zen', url: 'https://www.chosic.com/wp-content/uploads/2021/04/Enchanting-Meditation.mp3' }
-  ];
+  const { exercises, fetchExercises } = useStore();
 
   useEffect(() => {
-    if (audioRef.current) {
-      if (isPlaying) {
-        setIsLoading(true);
-        const playPromise = audioRef.current.play();
-        if (playPromise !== undefined) {
-          playPromise.catch((error: any) => {
-            console.error("Playback error:", error);
-            setIsPlaying(false);
-            setIsLoading(false);
-          });
-        }
-      } else {
-        audioRef.current.pause();
-      }
-    }
-  }, [isPlaying, currentTrackIndex]);
+    fetchExercises();
+  }, [fetchExercises]);
 
-  const handleTimeUpdate = () => {
-    if (audioRef.current) {
-      const current = audioRef.current.currentTime;
-      const total = audioRef.current.duration;
-      if (total) setProgress((current / total) * 100);
-      if (current > 0 && isLoading) setIsLoading(false);
-    }
-  };
 
   const handleTrackSelect = (index: number) => {
     setCurrentTrackIndex(index);
@@ -60,56 +65,44 @@ const Healthy: React.FC = () => {
     setIsPlaying(true);
   };
 
-  const exercises = [
-    { 
-      title: 'Diabet uchun 10 daqiqalik kardiomashq', 
-      duration: '10 daqiqa', 
-      level: 'Oson', 
-      color: '#3b82f6',
-      videoId: 'hJbRpHZr_d0', 
-      thumbnail: 'https://img.youtube.com/vi/hJbRpHZr_d0/maxresdefault.jpg'
-    },
-    { 
-      title: 'Yoga: Qon shakarini tushirish uchun', 
-      duration: '20 daqiqa', 
-      level: 'Oson', 
-      color: '#10b981',
-      videoId: 'o_bC40d4hKs', 
-      thumbnail: 'https://img.youtube.com/vi/o_bC40d4hKs/maxresdefault.jpg'
-    },
-    { 
-      title: 'Kuch mashqlari (Gantellar bilan)', 
-      duration: '15 daqiqa', 
-      level: 'O\'rta', 
-      color: '#f59e0b',
-      videoId: '30W14G5m_7E', 
-      thumbnail: 'https://img.youtube.com/vi/30W14G5m_7E/maxresdefault.jpg'
-    },
-    { 
-      title: 'O\'tirgan holda badantarbiya', 
-      duration: '12 daqiqa', 
-      level: 'Oson', 
-      color: '#8b5cf6',
-      videoId: '9n_kXk8Gk-0', 
-      thumbnail: 'https://img.youtube.com/vi/9n_kXk8Gk-0/maxresdefault.jpg'
-    },
-    { 
-      title: 'Uyda 1 km piyoda yurish', 
-      duration: '15 daqiqa', 
-      level: 'Oson', 
-      color: '#ec4899',
-      videoId: 'enYITYwvPAQ', 
-      thumbnail: 'https://img.youtube.com/vi/enYITYwvPAQ/maxresdefault.jpg'
-    },
-    { 
-      title: 'Butun tana uchun intensiv mashq', 
-      duration: '25 daqiqa', 
-      level: 'Qiyin', 
-      color: '#ef4444',
-      videoId: 't084x3KZO04', 
-      thumbnail: 'https://img.youtube.com/vi/t084x3KZO04/maxresdefault.jpg'
+
+
+  const getYoutubeId = (url: string) => {
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+    const match = url.match(regExp);
+    return (match && match[2].length === 11) ? match[2] : null;
+  };
+
+  const getEmbedUrl = (url: string) => {
+    if (!url) return '';
+    const cleanUrl = url.trim();
+    
+    // YouTube
+    if (cleanUrl.includes('youtube.com') || cleanUrl.includes('youtu.be')) {
+      const id = getYoutubeId(cleanUrl);
+      return id ? `https://www.youtube.com/embed/${id}?autoplay=${isPlaying ? 1 : 0}&controls=1&modestbranding=1&rel=0` : cleanUrl;
     }
-  ];
+    
+    // Spotify
+    if (cleanUrl.includes('open.spotify.com/track/')) {
+      const id = cleanUrl.split('/track/')[1]?.split('?')[0];
+      return id ? `https://open.spotify.com/embed/track/${id}` : cleanUrl;
+    }
+    
+    // SoundCloud
+    if (cleanUrl.includes('soundcloud.com')) {
+      return `https://w.soundcloud.com/player/?url=${encodeURIComponent(cleanUrl)}&color=%230d9488&auto_play=${isPlaying}&hide_related=true&show_comments=false&show_user=true&show_reposts=false&show_teaser=false`;
+    }
+    
+    // Epidemic Sound
+    if (cleanUrl.includes('epidemicsound.com/music/tracks/')) {
+      const id = cleanUrl.split('/tracks/')[1]?.split('/')[0];
+      return id ? `https://player.epidemicsound.com/?track=${id}` : cleanUrl;
+    }
+    
+    return cleanUrl;
+  };
+
 
   return (
     <div className="healthy-container">
@@ -162,88 +155,103 @@ const Healthy: React.FC = () => {
             </div>
             
             <div className="exercise-grid">
-              {exercises.map((ex, i) => (
-                <div key={i} className={`card exercise-card ${selectedVideo === ex.videoId ? 'active' : ''}`} onClick={() => setSelectedVideo(ex.videoId)}>
-                  <div className="ex-thumbnail">
-                    <img src={ex.thumbnail} alt={ex.title} />
-                    <div className="play-overlay">
-                      <Play size={24} fill="currentColor" />
+              {exercises.length > 0 ? (
+                exercises.map((ex, i) => (
+                  <div key={ex.id || i} className={`card exercise-card ${selectedVideo === ex.videoId ? 'active' : ''}`} onClick={() => setSelectedVideo(ex.videoId)}>
+                    <div className="ex-thumbnail">
+                      <img src={ex.thumbnail} alt={ex.title} />
+                      <div className="play-overlay">
+                        <Play size={24} fill="currentColor" />
+                      </div>
+                    </div>
+                    <div className="ex-content">
+                      <div className="ex-info">
+                        <h4>{ex.title}</h4>
+                        <span>{ex.duration} • {ex.level}</span>
+                      </div>
+                      <div className="ex-status badge" style={{ backgroundColor: ex.color + '20', color: ex.color }}>{ex.level}</div>
                     </div>
                   </div>
-                  <div className="ex-content">
-                    <div className="ex-info">
-                      <h4>{ex.title}</h4>
-                      <span>{ex.duration} • {ex.level}</span>
-                    </div>
-                    <div className="ex-status badge">{ex.level}</div>
-                  </div>
+                ))
+              ) : (
+                <div className="empty-exercises">
+                  <Loader2 className="animate-spin" />
+                  <p>Mashqlar yuklanmoqda...</p>
                 </div>
-              ))}
+              )}
             </div>
           </div>
         </div>
       ) : (
-        <div className="music-player">
-          <audio 
-            ref={audioRef} 
-            src={tracks[currentTrackIndex].url} 
-            onTimeUpdate={handleTimeUpdate}
-            onEnded={handleNext}
-            onLoadStart={() => setIsLoading(true)}
-            onCanPlay={() => setIsLoading(isPlaying)}
-            onWaiting={() => setIsLoading(true)}
-            onPlaying={() => setIsLoading(false)}
-            crossOrigin="anonymous"
-            onError={(e) => {
-              console.error("Audio Load Error:", e);
-              setIsPlaying(false);
-              setIsLoading(false);
-            }}
-          />
-          <div className="now-playing card glass">
-            <div className={`album-art ${isPlaying && !isLoading ? 'animate-float' : ''} ${isLoading ? 'loading' : ''}`}>
-              {isLoading ? (
-                <div className="loader-mini"></div>
-              ) : (
+        <div className="music-player animate-in">
+          <div className="meditation-player glass">
+            <div className="meditation-art-container">
+              <div className={`meditation-art ${isPlaying ? 'pulsing' : ''}`}>
                 <Wind size={48} color="white" />
-              )}
-            </div>
-            <h3>{tracks[currentTrackIndex].title}</h3>
-            <p>{tracks[currentTrackIndex].artist}</p>
-            
-            <div className="player-controls">
-              <button className="icon-btn" onClick={handlePrev} disabled={isLoading}><SkipBack size={24} /></button>
-              <button className="play-btn" onClick={() => setIsPlaying(!isPlaying)} disabled={isLoading}>
-                {isLoading ? <div className="loader-mini"></div> : (isPlaying ? <Pause size={32} /> : <Play size={32} />)}
-              </button>
-              <button className="icon-btn" onClick={handleNext} disabled={isLoading}><SkipForward size={24} /></button>
-            </div>
-            
-            <div className="progress-container">
-              <div className="progress-bar">
-                <div className="progress" style={{ width: `${progress}%` }}></div>
+                {isPlaying && (
+                  <div className="visualizer-rings">
+                    <div className="ring"></div>
+                    <div className="ring"></div>
+                    <div className="ring"></div>
+                  </div>
+                )}
               </div>
+            </div>
+
+            <div className="now-playing-header">
+              <h3>{tracks[currentTrackIndex]?.title}</h3>
+              <p>{tracks[currentTrackIndex]?.artist}</p>
+            </div>
+
+            <div className="meditation-controls">
+              <button className="icon-btn" onClick={handlePrev}>
+                <SkipBack size={24} />
+              </button>
+              <button className="play-btn-main" onClick={() => setIsPlaying(!isPlaying)}>
+                {isPlaying ? <Pause size={32} fill="white" /> : <Play size={32} fill="white" />}
+              </button>
+              <button className="icon-btn" onClick={handleNext}>
+                <SkipForward size={24} />
+              </button>
+            </div>
+
+            {/* Hidden Bridge for YouTube Audio */}
+            <div className="hidden-audio-frame">
+              <iframe 
+                key={currentTrackIndex}
+                src={getEmbedUrl(tracks[currentTrackIndex]?.url)}
+                title="Meditation Audio"
+                allow="autoplay; encrypted-media"
+                frameBorder="0"
+              />
             </div>
           </div>
 
-          <div className="playlist card">
-            <h3>Navbatdagi kuylar</h3>
-            <div className="playlist-items">
+          <div className="playlist-section glass">
+            <div className="playlist-header">
+              <Wind size={18} color="var(--primary)" />
+              <h4>Meditatsiya kuylari</h4>
+            </div>
+            <div className="playlist-scroll">
               {tracks.map((t, i) => (
                 <div 
                   key={i} 
-                  className={`playlist-item ${currentTrackIndex === i ? 'active' : ''}`}
+                  className={`meditation-track-item ${currentTrackIndex === i ? 'active' : ''}`}
                   onClick={() => handleTrackSelect(i)}
                 >
-                  <Music size={16} color={currentTrackIndex === i ? 'var(--primary)' : 'var(--text-muted)'} />
-                  <div className="track-info">
+                  <div className="track-icon-wrapper">
+                    <Music size={14} />
+                  </div>
+                  <div className="track-details">
                     <p>{t.title}</p>
                     <span>{t.artist}</span>
                   </div>
-                  {currentTrackIndex === i && isPlaying ? (
-                    <div className="playing-bars"><span></span><span></span><span></span></div>
-                  ) : (
-                    <Play size={14} color="var(--primary)" />
+                  {currentTrackIndex === i && isPlaying && (
+                    <div className="playing-bars">
+                      <span></span>
+                      <span></span>
+                      <span></span>
+                    </div>
                   )}
                 </div>
               ))}
