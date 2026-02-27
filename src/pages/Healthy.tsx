@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Play, Pause, SkipForward, SkipBack, Dumbbell, Music, Wind, Globe, Loader2 } from 'lucide-react';
+import { Play, Pause, SkipForward, SkipBack, Dumbbell, Music, Wind, Globe, Loader2, Droplet } from 'lucide-react';
 import { useStore } from '../store';
+import WaterTracker from '../components/WaterTracker';
 import './Healthy.css';
 
 const INITIAL_TRACKS = [
@@ -37,7 +38,7 @@ const INITIAL_TRACKS = [
 ];
 
 const Healthy: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'exercise' | 'music'>('exercise');
+  const [activeTab, setActiveTab] = useState<'exercise' | 'music' | 'health'>('exercise');
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
   const [selectedVideo, setSelectedVideo] = useState<string | null>(null);
@@ -123,9 +124,15 @@ const Healthy: React.FC = () => {
         >
           <Music size={18} /> Musiqa
         </button>
+        <button 
+          className={activeTab === 'health' ? 'active' : ''} 
+          onClick={() => setActiveTab('health')}
+        >
+          <Droplet size={18} /> Salomatlik
+        </button>
       </div>
 
-      {activeTab === 'exercise' ? (
+      {activeTab === 'exercise' && (
         <div className="exercise-section">
           {selectedVideo && (
             <div className="video-player-container glass">
@@ -182,7 +189,9 @@ const Healthy: React.FC = () => {
             </div>
           </div>
         </div>
-      ) : (
+      )}
+
+      {activeTab === 'music' && (
         <div className="music-player animate-in">
           <div className="meditation-player glass">
             <div className="meditation-art-container">
@@ -257,6 +266,12 @@ const Healthy: React.FC = () => {
               ))}
             </div>
           </div>
+        </div>
+      )}
+
+      {activeTab === 'health' && (
+        <div className="health-section animate-in">
+          <WaterTracker />
         </div>
       )}
     </div>

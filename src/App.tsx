@@ -1,23 +1,31 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from './firebase';
 import { useStore } from './store';
 
 import Layout from './components/Layout';
-import Profile from './pages/Profile';
-import Glucose from './pages/Glucose';
-import Symptoms from './pages/Symptoms';
-import Academy from './pages/Academy';
-import Healthy from './pages/Healthy';
-import Calculator from './pages/Calculator';
-import Analytics from './pages/Analytics';
-import FoodGI from './pages/FoodGI';
-import Dashboard from './pages/Dashboard';
-import Login from './pages/Login';
-import Register from './pages/Register';
-import AdminDashboard from './pages/AdminDashboard';
 import { ShieldAlert } from 'lucide-react';
+
+// Lazy load pages for code splitting
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const Glucose = lazy(() => import('./pages/Glucose'));
+const Symptoms = lazy(() => import('./pages/Symptoms'));
+const Academy = lazy(() => import('./pages/Academy'));
+const Healthy = lazy(() => import('./pages/Healthy'));
+const Analytics = lazy(() => import('./pages/Analytics'));
+const FoodGI = lazy(() => import('./pages/FoodGI'));
+const Calculator = lazy(() => import('./pages/Calculator'));
+const Profile = lazy(() => import('./pages/Profile'));
+const Login = lazy(() => import('./pages/Login'));
+const Register = lazy(() => import('./pages/Register'));
+const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
+
+const PageLoader = () => (
+  <div className="loading-screen" style={{ background: 'transparent', height: '100%' }}>
+    <div className="loader"></div>
+  </div>
+);
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, loading } = useStore();
@@ -77,23 +85,25 @@ function App() {
   return (
     <div data-theme={theme}>
       <BrowserRouter>
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
-            <Route index element={<Dashboard />} />
-            <Route path="glucose" element={<Glucose />} />
-            <Route path="symptoms" element={<Symptoms />} />
-            <Route path="academy" element={<Academy />} />
-            <Route path="healthy" element={<Healthy />} />
-            <Route path="analytics" element={<Analytics />} />
-            <Route path="food-gi" element={<FoodGI />} />
-            <Route path="calculator" element={<Calculator />} />
-            <Route path="profile" element={<Profile />} />
-            <Route path="admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
-            <Route path="*" element={<Navigate to="/" />} />
-          </Route>
-        </Routes>
+        <Suspense fallback={<PageLoader />}>
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
+              <Route index element={<Dashboard />} />
+              <Route path="glucose" element={<Glucose />} />
+              <Route path="symptoms" element={<Symptoms />} />
+              <Route path="academy" element={<Academy />} />
+              <Route path="healthy" element={<Healthy />} />
+              <Route path="analytics" element={<Analytics />} />
+              <Route path="food-gi" element={<FoodGI />} />
+              <Route path="calculator" element={<Calculator />} />
+              <Route path="profile" element={<Profile />} />
+              <Route path="admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
+              <Route path="*" element={<Navigate to="/" />} />
+            </Route>
+          </Routes>
+        </Suspense>
       </BrowserRouter>
     </div>
   );

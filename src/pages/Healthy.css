@@ -387,6 +387,21 @@
   color: var(--text-muted);
 }
 
+.music-player,
+.health-section {
+  display: grid;
+  grid-template-columns: 450px 1fr;
+  gap: 32px;
+  align-items: start;
+}
+
+.health-section {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+}
+
 .playing-bars {
   display: flex;
   align-items: flex-end;

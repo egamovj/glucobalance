@@ -8,7 +8,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['logo.svg'], // Removed non-existent favicon.ico and others
+      includeAssets: ['logo.svg'], 
       manifest: {
         name: 'Glucobalance - Diabet Nazorati',
         short_name: 'Glucobalance',
@@ -45,8 +45,24 @@ export default defineConfig({
       },
       devOptions: {
         enabled: true,
-        type: 'module', // Changed to module
+        type: 'module',
       }
     })
   ],
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('firebase')) return 'vendor-firebase';
+            if (id.includes('chart.js') || id.includes('react-chartjs-2')) return 'vendor-charts';
+            if (id.includes('lucide-react')) return 'vendor-ui';
+            if (id.includes('framer-motion')) return 'vendor-animation';
+            return 'vendor';
+          }
+        }
+      }
+    },
+    chunkSizeWarningLimit: 1000,
+  }
 })

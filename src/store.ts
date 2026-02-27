@@ -26,6 +26,13 @@ interface UserProfile {
   nanInsulin: number;
   doctorNotes?: string;
   role: "user" | "admin";
+  waterGoal: number;
+}
+
+interface WaterLog {
+  id: string;
+  amount: number;
+  timestamp: string;
 }
 
 interface Exercise {
@@ -57,6 +64,9 @@ interface AppState {
   addGlucoseLog: (log: any) => void;
   symptoms: any[];
   addSymptom: (symptom: any) => void;
+  waterLogs: WaterLog[];
+  addWaterLog: (amount: number) => Promise<void>;
+  deleteWaterLog: (id: string) => Promise<void>;
   lessons: any[];
   fetchLessons: () => Promise<void>;
   addLesson: (lesson: any) => Promise<void>;
@@ -91,11 +101,18 @@ export const useStore = create<AppState>()(
       setUser: (user) => set({ user, loading: false }),
       setLoading: (loading) => set({ loading }),
       profile: null,
+      glucoseLogs: [],
+      symptoms: [],
+      waterLogs: [],
+      lessons: [],
+      exercises: [],
+      symptomDefinitions: [],
       setProfile: async (profile) => {
         const currentProfile = get().profile;
         const updatedProfile = {
           ...profile,
           role: currentProfile?.role || profile.role || "user",
+          waterGoal: currentProfile?.waterGoal || profile.waterGoal || 2000,
         };
         set({ profile: updatedProfile });
         const user = get().user;
@@ -103,7 +120,6 @@ export const useStore = create<AppState>()(
           await setDoc(doc(db, "profiles", user.uid), updatedProfile);
         }
       },
-      glucoseLogs: [],
       addGlucoseLog: async (log) => {
         set((state) => ({ glucoseLogs: [log, ...state.glucoseLogs] }));
         const user = get().user;
@@ -114,7 +130,6 @@ export const useStore = create<AppState>()(
           });
         }
       },
-      symptoms: [],
       addSymptom: async (symptom) => {
         set((state) => ({ symptoms: [symptom, ...state.symptoms] }));
         const user = get().user;
@@ -125,7 +140,6 @@ export const useStore = create<AppState>()(
           });
         }
       },
-      lessons: [],
       fetchLessons: async () => {
         const lessonsRef = collection(db, "academy_lessons");
         const q = query(lessonsRef, orderBy("createdAt", "asc"));
@@ -155,7 +169,6 @@ export const useStore = create<AppState>()(
           lessons: state.lessons.filter((l) => l.id !== id),
         }));
       },
-      exercises: [],
       fetchExercises: async () => {
         const exercisesRef = collection(db, "exercises");
         const q = query(exercisesRef, orderBy("createdAt", "asc"));
@@ -192,7 +205,6 @@ export const useStore = create<AppState>()(
           exercises: state.exercises.filter((e) => e.id !== id),
         }));
       },
-      symptomDefinitions: [],
       fetchSymptomDefinitions: async () => {
         const sympRef = collection(db, "symptom_definitions");
         const q = query(sympRef, orderBy("createdAt", "asc"));
@@ -357,6 +369,41 @@ export const useStore = create<AppState>()(
           ...doc.data(),
         })) as SymptomDefinition[];
         set({ symptomDefinitions: definitions });
+
+        // Sync Water Logs
+        const waterRef = collection(db, "water_logs");
+        const qWater = query(
+          waterRef,
+          where("userId", "==", userId),
+          orderBy("timestamp", "desc"),
+          limit(50),
+        );
+        const waterSnap = await getDocs(qWater);
+        const waterLogs = waterSnap.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        })) as WaterLog[];
+        set({ waterLogs });
+      },
+      addWaterLog: async (amount: number) => {
+        const userId = get().user?.uid;
+        if (!userId) return;
+
+        const newDoc = doc(collection(db, "water_logs"));
+        const newLog: WaterLog = {
+          id: newDoc.id,
+          amount,
+          timestamp: new Date().toISOString(),
+        };
+
+        await setDoc(newDoc, { ...newLog, userId });
+        set((state) => ({ waterLogs: [newLog, ...state.waterLogs] }));
+      },
+      deleteWaterLog: async (id: string) => {
+        await deleteDoc(doc(db, "water_logs", id));
+        set((state) => ({
+          waterLogs: state.waterLogs.filter((log) => log.id !== id),
+        }));
       },
       theme: "light",
       toggleTheme: () =>
