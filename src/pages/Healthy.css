@@ -402,6 +402,35 @@
   min-height: 400px;
 }
 
+@media (max-width: 900px) {
+  .music-player {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .meditation-player {
+    padding: 32px 20px;
+  }
+
+  .meditation-art {
+    width: 100px;
+    height: 100px;
+  }
+  
+  .meditation-art-container {
+    width: 140px;
+    height: 140px;
+  }
+
+  .now-playing-header h3 {
+    font-size: 20px;
+  }
+
+  .meditation-controls {
+    gap: 32px;
+  }
+}
+
 .playing-bars {
   display: flex;
   align-items: flex-end;
