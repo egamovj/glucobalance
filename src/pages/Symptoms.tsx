@@ -1,22 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useStore } from '../store';
 import { CheckCircle2, AlertCircle, History, Calendar as CalIcon, ArrowRight } from 'lucide-react';
 import { format } from 'date-fns';
 import './Symptoms.css';
 
 const Symptoms: React.FC = () => {
-  const { symptoms, addSymptom } = useStore();
+  const { symptoms, addSymptom, symptomDefinitions, fetchSymptomDefinitions } = useStore();
   const [selectedSymptoms, setSelectedSymptoms] = useState<string[]>([]);
 
-  const symptomList = [
-    { id: 'dizzy', label: 'Bosh aylanishi' },
-    { id: 'weak', label: 'Holsizlik' },
-    { id: 'thirsty', label: 'Ko\'p chanqash' },
-    { id: 'urination', label: 'Tez-tez siydik ajralishi' },
-    { id: 'numb', label: 'Qo\'l-oyoq uvishishi' },
-    { id: 'vision', label: 'Ko\'rish xiralashishi' },
-    { id: 'heart', label: 'Yurak urish tezlashishi' }
-  ];
+  useEffect(() => {
+    fetchSymptomDefinitions();
+  }, [fetchSymptomDefinitions]);
+
+  const symptomList = symptomDefinitions;
 
   const toggleSymptom = (id: string) => {
     setSelectedSymptoms(prev => 

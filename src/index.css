@@ -110,6 +110,26 @@ body {
   transform: translateY(-2px);
 }
 
+/* Global Layout Utilities */
+.section-title, .card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.section-title h3, .card-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.align-center {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .btn-primary {
   background: var(--primary);
   color: white;
@@ -139,13 +159,6 @@ body {
 }
 
 .w-full { width: 100%; }
-
-.theme-toggle-fixed {
-  position: fixed;
-  top: 24px;
-  right: 24px;
-  z-index: 1001;
-}
 
 .btn-icon {
   background: var(--bg-card);

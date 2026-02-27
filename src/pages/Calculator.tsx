@@ -13,7 +13,7 @@ const Calculator: React.FC = () => {
   const [foodAmount, setFoodAmount] = useState("");
   const [carbsPer100g, setCarbsPer100g] = useState("");
   const [totalCarbs, setTotalCarbs] = useState(0);
-  const [nan, setNan] = useState(0);
+  const [xe, setXe] = useState(0);
   const [insulin, setInsulin] = useState(0);
 
   useEffect(() => {
@@ -21,11 +21,11 @@ const Calculator: React.FC = () => {
     const carbs = parseFloat(carbsPer100g) || 0;
 
     const calculatedCarbs = (amount * carbs) / 100;
-    const calculatedNan = calculatedCarbs / 12;
-    const calculatedInsulin = calculatedNan * (profile?.nanInsulin || 1);
+    const calculatedXe = calculatedCarbs / 12;
+    const calculatedInsulin = calculatedXe * (profile?.nanInsulin || 1);
 
     setTotalCarbs(calculatedCarbs);
-    setNan(calculatedNan);
+    setXe(calculatedXe);
     setInsulin(calculatedInsulin);
   }, [foodAmount, carbsPer100g, profile]);
 
@@ -66,8 +66,8 @@ const Calculator: React.FC = () => {
             <p>{totalCarbs.toFixed(1)} g</p>
           </div>
           <div className="result-item">
-            <span>NAN birligi</span>
-            <p>{nan.toFixed(1)}</p>
+            <span>XE birligi</span>
+            <p>{xe.toFixed(1)}</p>
           </div>
         </div>
 
@@ -77,7 +77,7 @@ const Calculator: React.FC = () => {
             {insulin.toFixed(1)} <sub>birlik</sub>
           </h2>
           <p className="formula-hint">
-            Formula: {nan.toFixed(1)} NAN × {profile?.nanInsulin || 1} birlik
+            Formula: {xe.toFixed(1)} XE × {profile?.nanInsulin || 1} birlik
           </p>
         </div>
       </div>

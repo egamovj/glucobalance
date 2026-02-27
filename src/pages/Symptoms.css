@@ -11,6 +11,10 @@
   letter-spacing: -0.02em;
 }
 
+.section-title h3 {
+  font-size: 22px;
+}
+
 .symptom-selector {
   padding: 40px;
 }

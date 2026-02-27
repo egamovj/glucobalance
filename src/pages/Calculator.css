@@ -1,16 +1,17 @@
-.page-header {
-  grid-column: 1 / -1;
-  margin-bottom: 32px;
+.calc-container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  max-width: 800px;
+  margin: 0 auto;
 }
 
-.page-header h1 {
-  font-size: 32px;
-  font-weight: 800;
-  letter-spacing: -0.03em;
+.page-header {
+  margin-bottom: 8px;
 }
 
 .calculator-card {
-  padding: 40px;
+  padding: 32px;
   border: 1px solid rgba(0,0,0,0.02);
 }
 

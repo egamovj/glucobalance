@@ -17,7 +17,7 @@ import Dashboard from './pages/Dashboard';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import AdminDashboard from './pages/AdminDashboard';
-import { Sun, Moon, ShieldAlert } from 'lucide-react';
+import { ShieldAlert } from 'lucide-react';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, loading } = useStore();
@@ -57,7 +57,6 @@ const AdminRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
 function App() {
   const theme = useStore((state) => state.theme);
-  const toggleTheme = useStore((state) => state.toggleTheme);
   const { setUser, setLoading } = useStore();
 
   useEffect(() => {
@@ -78,11 +77,6 @@ function App() {
   return (
     <div data-theme={theme}>
       <BrowserRouter>
-        <div className="theme-toggle-fixed">
-          <button onClick={toggleTheme} className="btn-icon">
-            {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
-          </button>
-        </div>
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />

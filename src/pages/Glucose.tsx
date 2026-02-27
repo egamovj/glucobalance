@@ -5,7 +5,7 @@ import { format } from 'date-fns';
 import './Glucose.css';
 
 const Glucose: React.FC = () => {
-  const { glucoseLogs, addGlucoseLog } = useStore();
+  const { glucoseLogs, addGlucoseLog, profile } = useStore();
   const [showForm, setShowForm] = useState(false);
   const [value, setValue] = useState('');
   const [category, setCategory] = useState('och qoringa'); // Default: Fasting
@@ -36,9 +36,11 @@ const Glucose: React.FC = () => {
   };
 
   const getStatus = (val: number) => {
+    const target = profile?.targetGlucose || 5.5;
     if (val < 3.9) return { text: 'Gipoglikemiya', color: 'var(--error)' };
-    if (val > 10.0) return { text: 'Yuqori', color: 'var(--warning)' };
-    return { text: 'Normal', color: 'var(--success)' };
+    if (val > (target + 3.0)) return { text: 'Yuqori', color: 'var(--warning)' };
+    if (val > (target - 1.0) && val < (target + 1.5)) return { text: 'Normal', color: 'var(--success)' };
+    return { text: 'O\'rta', color: 'var(--primary)' };
   };
 
   return (
@@ -82,13 +84,17 @@ const Glucose: React.FC = () => {
 
       <section className="summary-cards">
         <div className="card mini-card">
-          <TrendingUp size={20} color="var(--primary)" />
-          <span>O'rtacha</span>
+          <div className="card-header">
+            <TrendingUp size={20} color="var(--primary)" />
+            <span>O'rtacha</span>
+          </div>
           <h3>{glucoseLogs.length > 0 ? (glucoseLogs.reduce((acc, log) => acc + log.value, 0) / glucoseLogs.length).toFixed(1) : '0.0'}</h3>
         </div>
         <div className="card mini-card">
-          <Clock size={20} color="var(--primary)" />
-          <span>Oxirgi</span>
+          <div className="card-header">
+            <Clock size={20} color="var(--primary)" />
+            <span>Oxirgi</span>
+          </div>
           <h3>{glucoseLogs[0]?.value || '0.0'}</h3>
         </div>
       </section>

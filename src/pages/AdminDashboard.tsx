@@ -11,9 +11,10 @@ const AdminDashboard: React.FC = () => {
   const { 
     lessons, addLesson, updateLesson, deleteLesson, 
     exercises, fetchExercises, addExercise, updateExercise, deleteExercise,
-    uploadImage, seedLessons, seedExercises 
+    symptomDefinitions, fetchSymptomDefinitions, addSymptomDefinition, deleteSymptomDefinition,
+    uploadImage, seedLessons, seedExercises, seedSymptomDefinitions 
   } = useStore();
-  const [activeTab, setActiveTab] = useState<'academy' | 'exercises'>('academy');
+  const [activeTab, setActiveTab] = useState<'academy' | 'exercises' | 'symptoms'>('academy');
   const [editingId, setEditingId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -39,11 +40,14 @@ const AdminDashboard: React.FC = () => {
     thumbnail: '',
     color: '#3b82f6'
   });
+  
+  const [newSymptomLabel, setNewSymptomLabel] = useState('');
 
 
   useEffect(() => {
     fetchExercises();
-  }, [fetchExercises]);
+    fetchSymptomDefinitions();
+  }, [fetchExercises, fetchSymptomDefinitions]);
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -242,6 +246,35 @@ const AdminDashboard: React.FC = () => {
     }
   };
 
+  const handleAddSymptomDef = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newSymptomLabel.trim()) return;
+    try {
+      await addSymptomDefinition(newSymptomLabel.trim());
+      setNewSymptomLabel('');
+      alert("Simptom qo'shildi!");
+    } catch (error) {
+      alert("Xatolik yuz berdi");
+    }
+  };
+
+  const handleDeleteSymptomDef = async (id: string, label: string) => {
+    if (confirm(`"${label}" belgisini o'chirmoqchimisiz?`)) {
+      try {
+        await deleteSymptomDefinition(id);
+      } catch (error) {
+        alert("Xatolik yuz berdi");
+      }
+    }
+  };
+
+  const handleSeedSymptoms = async () => {
+    if (confirm("Birlamchi simptomlarni yuklamoqchimisiz?")) {
+      await seedSymptomDefinitions();
+      alert("Simptomlar yuklandi!");
+    }
+  };
+
   return (
     <div className="admin-dashboard-container">
       <header className="page-header">
@@ -267,6 +300,13 @@ const AdminDashboard: React.FC = () => {
           >
             <Activity size={20} />
             <span>Mashqlar</span>
+          </button>
+          <button 
+            className={`tab-item ${activeTab === 'symptoms' ? 'active' : ''}`}
+            onClick={() => setActiveTab('symptoms')}
+          >
+            <ShieldCheck size={20} />
+            <span>Simptomlar</span>
           </button>
         </aside>
 
@@ -558,6 +598,68 @@ const AdminDashboard: React.FC = () => {
                     <div className="empty-state">
                       <Activity size={32} opacity={0.3} />
                       <p>Mashqlar hali qo'shilmagan</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'symptoms' && (
+            <div className="admin-section animate-in">
+              <div className="section-header">
+                <h2><ShieldCheck size={22} /> Simptomlar boshqaruvi ({symptomDefinitions.length})</h2>
+                <button className="btn-secondary btn-sm" onClick={handleSeedSymptoms}>
+                  <Database size={16} /> Birlamchi simptomlar
+                </button>
+              </div>
+
+              <div className="card admin-form-card glass">
+                <h3><PlusCircle size={18} /> Yangi simptom qo'shish</h3>
+                <form onSubmit={handleAddSymptomDef} className="admin-form">
+                  <div className="form-group">
+                    <label>Simptom nomi</label>
+                    <div style={{ display: 'flex', gap: '12px' }}>
+                      <input 
+                        type="text" 
+                        placeholder="Masalan: Ko'ngil aynishi"
+                        value={newSymptomLabel}
+                        onChange={e => setNewSymptomLabel(e.target.value)}
+                        required
+                        style={{ flex: 1 }}
+                      />
+                      <button type="submit" className="btn-primary" style={{ width: 'auto', padding: '0 24px' }}>
+                        <PlusCircle size={18} /> Qo'shish
+                      </button>
+                    </div>
+                  </div>
+                </form>
+              </div>
+
+              <div className="active-items-list">
+                <h3>Mavjud simptomlar</h3>
+                <div className="items-grid">
+                  {symptomDefinitions.map(def => (
+                    <div key={def.id} className="item-card glass symptom-def-item">
+                      <div className="item-main-info">
+                        <div className="item-icon-circle">
+                          <Activity size={16} color="var(--primary)" />
+                        </div>
+                        <div className="item-info">
+                          <h4>{def.label}</h4>
+                        </div>
+                      </div>
+                      <div className="item-actions">
+                        <button className="btn-icon-sm delete" onClick={() => handleDeleteSymptomDef(def.id, def.label)} title="O'chirish">
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                  {symptomDefinitions.length === 0 && (
+                    <div className="empty-state">
+                      <ShieldCheck size={32} opacity={0.3} />
+                      <p>Simptomlar hali qo'shilmagan</p>
                     </div>
                   )}
                 </div>

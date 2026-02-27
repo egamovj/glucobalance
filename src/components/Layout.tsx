@@ -174,11 +174,6 @@ const Layout: React.FC = () => {
       </nav>
 
       <div className="content-wrapper">
-        <header className="top-header desktop-only">
-           <div className="header-search">
-             <input type="text" placeholder="Qidiruv..." />
-           </div>
-        </header>
         <main className="content-area">
           <Outlet />
         </main>

@@ -39,6 +39,12 @@ interface Exercise {
   createdAt: number;
 }
 
+interface SymptomDefinition {
+  id: string;
+  label: string;
+  createdAt: number;
+}
+
 
 interface AppState {
   user: any | null;
@@ -61,12 +67,17 @@ interface AppState {
   addExercise: (exercise: Omit<Exercise, "id" | "createdAt">) => Promise<void>;
   updateExercise: (id: string, exercise: Partial<Exercise>) => Promise<void>;
   deleteExercise: (id: string) => Promise<void>;
+  symptomDefinitions: SymptomDefinition[];
+  fetchSymptomDefinitions: () => Promise<void>;
+  addSymptomDefinition: (label: string) => Promise<void>;
+  deleteSymptomDefinition: (id: string) => Promise<void>;
   uploadImage: (
     file: File,
     onProgress?: (progress: number) => void,
   ) => Promise<string>;
   seedLessons: (initialLessons: any[]) => Promise<void>;
   seedExercises: (initialExercises: any[]) => Promise<void>;
+  seedSymptomDefinitions: () => Promise<void>;
   syncFromFirestore: (userId: string) => Promise<void>;
   theme: "light" | "dark";
   toggleTheme: () => void;
@@ -181,6 +192,32 @@ export const useStore = create<AppState>()(
           exercises: state.exercises.filter((e) => e.id !== id),
         }));
       },
+      symptomDefinitions: [],
+      fetchSymptomDefinitions: async () => {
+        const sympRef = collection(db, "symptom_definitions");
+        const q = query(sympRef, orderBy("createdAt", "asc"));
+        const snap = await getDocs(q);
+        const definitions = snap.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        })) as SymptomDefinition[];
+        set({ symptomDefinitions: definitions });
+      },
+      addSymptomDefinition: async (label) => {
+        const newDoc = doc(collection(db, "symptom_definitions"));
+        const sympData = { label, id: newDoc.id, createdAt: Date.now() };
+        await setDoc(newDoc, sympData);
+        set((state) => ({
+          symptomDefinitions: [...state.symptomDefinitions, sympData],
+        }));
+      },
+      deleteSymptomDefinition: async (id) => {
+        const sympRef = doc(db, "symptom_definitions", id);
+        await deleteDoc(sympRef);
+        set((state) => ({
+          symptomDefinitions: state.symptomDefinitions.filter((s) => s.id !== id),
+        }));
+      },
       uploadImage: async (
         file: File,
         onProgress?: (progress: number) => void,
@@ -257,6 +294,29 @@ export const useStore = create<AppState>()(
         })) as Exercise[];
         set({ exercises });
       },
+      seedSymptomDefinitions: async () => {
+        const initialSymptoms = [
+          { label: "Bosh aylanishi" },
+          { label: "Holsizlik" },
+          { label: "Ko'p chanqash" },
+          { label: "Tez-tez siydik ajralishi" },
+          { label: "Qo'l-oyoq uvishishi" },
+          { label: "Ko'rish xiralashishi" },
+          { label: "Yurak urish tezlashishi" },
+        ];
+        for (const symp of initialSymptoms) {
+          const newDoc = doc(collection(db, "symptom_definitions"));
+          await setDoc(newDoc, { ...symp, id: newDoc.id, createdAt: Date.now() });
+        }
+        const sympRef = collection(db, "symptom_definitions");
+        const q = query(sympRef, orderBy("createdAt", "asc"));
+        const snap = await getDocs(q);
+        const symptomDefinitions = snap.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        })) as SymptomDefinition[];
+        set({ symptomDefinitions });
+      },
       syncFromFirestore: async (userId: string) => {
         // Sync Profile
         const profDoc = await getDoc(doc(db, "profiles", userId));
@@ -287,6 +347,16 @@ export const useStore = create<AppState>()(
         const sympSnap = await getDocs(qSymp);
         const symptoms = sympSnap.docs.map((doc) => doc.data());
         set({ symptoms: symptoms });
+
+        // Sync Symptom Definitions
+        const defRef = collection(db, "symptom_definitions");
+        const qDef = query(defRef, orderBy("createdAt", "asc"));
+        const defSnap = await getDocs(qDef);
+        const definitions = defSnap.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        })) as SymptomDefinition[];
+        set({ symptomDefinitions: definitions });
       },
       theme: "light",
       toggleTheme: () =>

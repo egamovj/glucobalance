@@ -317,3 +317,26 @@
     transform: translateY(0);
   }
 }
+
+/* Symptom Management Styles */
+.symptom-def-item {
+  padding: 12px 16px !important;
+  background: rgba(255, 255, 255, 0.03) !important;
+}
+
+.item-icon-circle {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--primary-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 12px;
+}
+
+.symptom-def-item .item-info h4 {
+  font-size: 14px;
+  font-weight: 500;
+  margin: 0;
+}

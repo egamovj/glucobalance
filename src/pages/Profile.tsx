@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useStore } from '../store';
-import { User, Activity, Ruler, Weight, Calendar, Heart, Shield, Download } from 'lucide-react';
+import { User, Activity, Ruler, Weight, Calendar, Heart, Shield, Download, Sun, Moon } from 'lucide-react';
 import './Profile.css';
 
 const Profile: React.FC = () => {
@@ -73,29 +73,35 @@ const Profile: React.FC = () => {
       <div className="profile-container">
         <header className="profile-header">
           <div className="avatar">{profile.name.charAt(0).toUpperCase()}</div>
-          <h2>{profile.name}</h2>
-          <span className="badge">{profile.type === 'type1' ? '1-tur Diabet' : '2-tur Diabet'}</span>
+          <div className="header-content">
+             <h2>{profile.name}</h2>
+             <span className="badge">{profile.type === 'type1' ? '1-tur Diabet' : '2-tur Diabet'}</span>
+          </div>
         </header>
 
         <section className="stats-grid">
           <div className="card stat-card">
-            <Ruler size={20} color="var(--primary)" />
-            <div className="stat-info">
+            <div className="stat-header">
+              <Ruler size={20} color="var(--primary)" />
               <label>BMI</label>
-              <p>{bmi}</p>
             </div>
+            <p>{bmi}</p>
           </div>
           <div className="card stat-card">
-            <Weight size={20} color="var(--primary)" />
-            <div className="stat-info">
-              <label>Vazn</label>
-              <p>{profile.weight} kg</p>
+            <div className="stat-header">
+               <Weight size={20} color="var(--primary)" />
+               <label>Vazn</label>
             </div>
+            <p>{profile.weight} kg</p>
           </div>
         </section>
 
         <div className="card info-list">
-          <h3>Tibbiy ko'rsatkichlar</h3>
+          <div className="section-title">
+             <Activity size={20} color="var(--primary)" />
+             <h3>Tibbiy ko'rsatkichlar</h3>
+          </div>
+          
           <div className="info-item">
             <Activity size={18} />
             <div>
@@ -116,6 +122,24 @@ const Profile: React.FC = () => {
               <p>Sezuvchanlik koeffitsienti</p>
               <span>{profile.sensitivity}</span>
             </div>
+          </div>
+        </div>
+
+        <div className="card info-list">
+          <div className="section-title">
+             <Shield size={20} color="var(--primary)" />
+             <h3>Ilova sozlamalari</h3>
+          </div>
+          <div className="settings-item">
+             <div className="settings-label">
+                <Sun size={18} />
+                <span>Mavzu (Yorug'/Qorong'u)</span>
+             </div>
+             <button className={`theme-switch ${useStore.getState().theme}`} onClick={useStore.getState().toggleTheme}>
+                <div className="switch-handle">
+                   {useStore.getState().theme === 'light' ? <Sun size={14} /> : <Moon size={14} />}
+                </div>
+             </button>
           </div>
         </div>
 
