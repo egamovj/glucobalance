@@ -163,10 +163,6 @@ const Layout: React.FC = () => {
           <Heart size={24} />
           <span>Hayot</span>
         </NavLink>
-        <NavLink to="/healthy" className={({ isActive }) => `mobile-nav-item ${isActive ? 'active' : ''}`} onClick={closeMobileMenu}>
-          <Heart size={24} />
-          <span>Hayot</span>
-        </NavLink>
         <button className={`mobile-nav-item btn-clear ${isMobileMenuOpen ? 'active' : ''}`} onClick={toggleMobileMenu}>
           <Menu size={24} />
           <span>Menyu</span>
