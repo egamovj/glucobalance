@@ -29,9 +29,11 @@
 
 @media (max-width: 992px) {
   .admin-tabs {
-    flex-direction: row;
-    overflow-x: auto;
+    flex-direction: column;
+    overflow-x: hidden;
     position: static;
+    margin-bottom: 24px;
+    padding: 12px;
   }
 }
 
@@ -39,25 +41,27 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 12px 16px;
-  border-radius: 12px;
-  background: transparent;
-  border: none;
+  padding: 14px 20px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
   color: var(--text-muted);
-  font-weight: 500;
-  transition: all 0.3s ease;
+  font-weight: 600;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   text-align: left;
 }
 
 .tab-item:hover {
-  background: rgba(255, 255, 255, 0.05);
-  color: var(--text);
+  background: rgba(13, 148, 136, 0.08);
+  color: var(--primary);
+  transform: translateX(4px);
 }
 
 .tab-item.active {
   background: var(--primary);
   color: white;
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+  box-shadow: 0 8px 16px var(--primary-glow);
+  border-color: var(--primary);
 }
 
 .admin-content {
@@ -69,6 +73,19 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 24px;
+  gap: 16px;
+}
+
+@media (max-width: 600px) {
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .section-header .btn-sm {
+    width: 100%;
+    justify-content: center;
+  }
 }
 
 .admin-form-card {
@@ -106,6 +123,21 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+
+.form-group .flex-wrapper {
+  display: flex;
+  gap: 12px;
+}
+
+@media (max-width: 500px) {
+  .form-group .flex-wrapper {
+    flex-direction: column;
+  }
+  
+  .form-group .flex-wrapper button {
+    width: 100% !important;
+  }
 }
 
 .form-group label {

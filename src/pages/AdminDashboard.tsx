@@ -619,7 +619,7 @@ const AdminDashboard: React.FC = () => {
                 <form onSubmit={handleAddSymptomDef} className="admin-form">
                   <div className="form-group">
                     <label>Simptom nomi</label>
-                    <div style={{ display: 'flex', gap: '12px' }}>
+                    <div className="flex-wrapper">
                       <input 
                         type="text" 
                         placeholder="Masalan: Ko'ngil aynishi"
