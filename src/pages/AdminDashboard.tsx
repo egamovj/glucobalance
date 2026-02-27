@@ -12,6 +12,7 @@ const AdminDashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'academy' | 'exercises' | 'music'>('academy');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   // Lesson state
@@ -29,16 +30,27 @@ const AdminDashboard: React.FC = () => {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    console.log("File selected for upload:", file.name, file.type, file.size);
+
     try {
       setIsUploading(true);
-      const url = await uploadImage(file);
+      setUploadProgress(0);
+      
+      const url = await uploadImage(file, (progress) => {
+        setUploadProgress(Math.round(progress));
+      });
+      
       setNewLesson(prev => ({ ...prev, imageUrl: url }));
       alert("Rasm muvaffaqiyatli yuklandi!");
-    } catch (error) {
-      console.error("Upload failed:", error);
-      alert("Rasmni yuklashda xatolik yuz berdi!");
+    } catch (error: any) {
+      console.error("Upload failed in component:", error);
+      alert(`Rasmni yuklashda xatolik yuz berdi: ${error.message || 'Noma\'lum xatolik'}`);
     } finally {
       setIsUploading(false);
+      setUploadProgress(0);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
     }
   };
 
@@ -226,8 +238,17 @@ const AdminDashboard: React.FC = () => {
                           onClick={() => fileInputRef.current?.click()}
                           disabled={isUploading}
                         >
-                          {isUploading ? <Loader size={12} className="animate-spin" /> : <Upload size={12} />}
-                          Kompyuterdan yuklash
+                          {isUploading ? (
+                            <>
+                              <Loader size={12} className="animate-spin" />
+                              Yuklanmoqda {uploadProgress}%
+                            </>
+                          ) : (
+                            <>
+                              <Upload size={12} />
+                              Kompyuterdan yuklash
+                            </>
+                          )}
                         </button>
                         <input 
                           type="file" 
