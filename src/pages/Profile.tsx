@@ -7,6 +7,8 @@ const Profile: React.FC = () => {
   const { profile, setProfile, user } = useStore();
   const [isEditing, setIsEditing] = useState(!profile);
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [isIOS, setIsIOS] = useState(false);
+  const [isStandalone, setIsStandalone] = useState(false);
   const [formData, setFormData] = useState(profile || {
     name: user?.displayName || '',
     birthDate: '',
@@ -22,14 +24,13 @@ const Profile: React.FC = () => {
   });
 
   useEffect(() => {
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
-    if (isStandalone) {
-      console.log('App is already running in standalone mode');
-      return;
-    }
+    const standalone = window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone;
+    setIsStandalone(standalone);
+
+    const ios = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+    setIsIOS(ios);
 
     const handleBeforeInstallPrompt = (e: Event) => {
-      console.log('PWA: beforeinstallprompt event fired');
       e.preventDefault();
       setDeferredPrompt(e);
     };
@@ -143,16 +144,24 @@ const Profile: React.FC = () => {
           </div>
         </div>
 
-        {deferredPrompt && (
+        {!isStandalone && (
           <div className="card install-card glass">
             <div className="install-content">
               <Download size={24} color="var(--primary)" />
               <div>
                 <h4>Ilovani o'rnatish</h4>
-                <p>Glucobalance-ni asosiy ekranga qo'shing va tezkor foydalaning.</p>
+                <p>
+                  {isIOS 
+                    ? "Glucobalance-ni asosiy ekranga qo'shish uchun 'Ulashish' tugmasini bosing va 'Asosiy ekranga qo'shish'-ni tanlang."
+                    : "Glucobalance-ni asosiy ekranga qo'shing va tezkor foydalaning."}
+                </p>
               </div>
             </div>
-            <button className="btn-primary" onClick={handleInstallClick}>O'rnatish</button>
+            {deferredPrompt ? (
+              <button className="btn-primary" onClick={handleInstallClick}>O'rnatish</button>
+            ) : !isIOS && (
+              <div className="install-hint">Brauzer sozlamalaridan o'rnating</div>
+            )}
           </div>
         )}
 
