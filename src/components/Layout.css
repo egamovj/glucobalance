@@ -11,6 +11,12 @@
   z-index: 100;
   overflow-y: auto;
   flex-shrink: 0;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+.sidebar::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
 }
 
 .sidebar-logo {
@@ -318,4 +324,8 @@
     font-family: inherit;
     padding: 0;
   }
+}
+
+[data-theme="dark"] .sidebar {
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
 }

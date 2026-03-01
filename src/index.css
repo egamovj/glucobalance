@@ -282,8 +282,8 @@ textarea:focus {
 }
 /* Modern Custom Scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
 }
 
 ::-webkit-scrollbar-track {
@@ -292,12 +292,17 @@ textarea:focus {
 
 ::-webkit-scrollbar-thumb {
   background: var(--text-soft);
-  border-radius: 10px;
-  opacity: 0.5;
+  border-radius: 20px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+  opacity: 0.4;
+  transition: var(--transition);
 }
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--primary);
+  border: 2px solid transparent;
+  background-clip: content-box;
 }
 
 /* For Firefox */
