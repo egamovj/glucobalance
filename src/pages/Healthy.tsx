@@ -7,33 +7,39 @@ import './Healthy.css';
 const INITIAL_TRACKS = [
   { 
     id: '1', 
-    title: 'Sokin Tabiat', 
-    artist: 'Nature Recovery', 
-    url: 'https://youtu.be/eNUpTV9BGac?si=YHybxsPtc-SfCeRC' 
+    title: 'Asabni yaxshilovchi musiqa', 
+    artist: 'Relaxing Music', 
+    url: 'https://youtu.be/Ml_9ERlnMhc?si=OSCjkKnJ7Yb0w6bo' 
   },
   { 
     id: '2', 
-    title: 'Chuqur Meditatsiya', 
-    artist: 'Zen Master', 
-    url: 'https://youtu.be/alU08EDp8dY?si=BhFTeKO_OYUPu1Qw' 
+    title: 'Tinchlantiruvchi tabiat muhiti', 
+    artist: 'Relaxing Music', 
+    url: 'https://youtu.be/57ZFGrEFjzI?si=HFRuDCeFm1BXHfwp' 
   },
   { 
     id: '3', 
-    title: 'Relax Piano', 
-    artist: 'Soul Harmony', 
-    url: 'https://youtu.be/Cl1dyPcZo6s?si=sYNywdv7bXIwvf58' 
+    title: 'Relax music', 
+    artist: 'Relaxing Music', 
+    url: 'https://www.youtube.com/live/UWczmxhj4Yw?si=K2j0djB8DyLjqRdk' 
   },
   {
     id: '4',
-    title: 'Koinot Sadosi',
-    artist: 'Astral Flow',
-    url: 'https://youtu.be/Q3CZtYHriRY?si=DPkYYyVUdsIiSklZ'
+    title: 'Diqqatni jamlash uchun piano',
+    artist: 'Relaxing Music',
+    url: 'https://youtu.be/8JAa1kqlMU4?si=ZldcMTmfU7KLYj1K'
   },
   {
     id: '4',
-    title: 'Rain & Birds',
-    artist: 'Astral Flow',
-    url: 'https://youtu.be/Lbl69TbpIzo?si=gofLyUizdaCkfeyG'
+    title: 'Tabiat va Nay kuyi',
+    artist: 'Leo Rojas',
+    url: 'https://youtu.be/CvwDxFEnfQA?si=rEzJO3biOdSNtI1m'
+  },
+  {
+    id: '5',
+    title: 'Runaway',
+    artist: 'Aurora',
+    url: 'https://youtu.be/d_HlPboLRL8?si=s56t52HxGefACQ4e'
   }
 ];
 
