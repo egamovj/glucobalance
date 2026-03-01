@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
 
 :root {
   /* Premium Medical Palette */
@@ -7,47 +7,48 @@
   --primary-glow: rgba(13, 148, 136, 0.15);
   --secondary: #10b981;
   --secondary-soft: #f0fdf4;
-  
+
   --bg-main: #fbfcfb;
   --bg-sidebar: #ffffff;
   --bg-card: #ffffff;
   --bg-card-rgb: 255, 255, 255;
-  
+
   --text-main: #0f172a;
   --text-muted: #64748b;
   --text-soft: #94a3b8;
-  
+
   --success: #10b981;
   --error: #ef4444;
   --warning: #f59e0b;
-  
+
   --radius-sm: 10px;
   --radius-md: 16px;
   --radius-lg: 24px;
   --radius-xl: 32px;
-  
-  --shadow-sm: 0 2px 4px rgba(0,0,0,0.02);
-  --shadow-md: 0 10px 25px -5px rgba(0,0,0,0.03), 0 8px 10px -6px rgba(0,0,0,0.03);
-  --shadow-lg: 0 20px 40px -10px rgba(0,0,0,0.05);
-  
-  --font-main: 'Inter', system-ui, -apple-system, sans-serif;
+
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.02);
+  --shadow-md:
+    0 10px 25px -5px rgba(0, 0, 0, 0.03), 0 8px 10px -6px rgba(0, 0, 0, 0.03);
+  --shadow-lg: 0 20px 40px -10px rgba(0, 0, 0, 0.05);
+
+  --font-main: "Inter", system-ui, -apple-system, sans-serif;
   --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-[data-theme='dark'] {
+[data-theme="dark"] {
   --bg-main: #020617;
   --bg-sidebar: #0f172a;
   --bg-card: #0f172a;
   --bg-card-rgb: 15, 23, 42;
-  
+
   --primary-soft: rgba(13, 148, 136, 0.1);
   --secondary-soft: rgba(16, 185, 129, 0.1);
-  
+
   --text-main: #f8fafc;
   --text-muted: #94a3b8;
   --text-soft: #64748b;
-  
-  --shadow-md: 0 10px 25px rgba(0,0,0,0.4);
+
+  --shadow-md: 0 10px 25px rgba(0, 0, 0, 0.4);
 }
 
 * {
@@ -91,7 +92,7 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.4);
 }
 
-[data-theme='dark'] .glass {
+[data-theme="dark"] .glass {
   background: rgba(15, 23, 42, 0.7);
   border: 1px solid rgba(255, 255, 255, 0.05);
 }
@@ -101,7 +102,7 @@ body {
   border-radius: var(--radius-lg);
   padding: 24px;
   box-shadow: var(--shadow-md);
-  border: 1px solid rgba(0,0,0,0.02);
+  border: 1px solid rgba(0, 0, 0, 0.02);
   transition: var(--transition);
 }
 
@@ -111,14 +112,16 @@ body {
 }
 
 /* Global Layout Utilities */
-.section-title, .card-header {
+.section-title,
+.card-header {
   display: flex;
   align-items: center;
   gap: 12px;
   margin-bottom: 20px;
 }
 
-.section-title h3, .card-header h3 {
+.section-title h3,
+.card-header h3 {
   margin: 0;
   font-size: 18px;
   font-weight: 700;
@@ -131,7 +134,26 @@ body {
 }
 
 /* Form Elements & Inputs */
-input, select, textarea {
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+.input-group label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+input,
+select,
+textarea {
+  width: 100%;
   background: var(--bg-card);
   border: 1px solid rgba(0, 0, 0, 0.08);
   padding: 12px 16px;
@@ -142,15 +164,17 @@ input, select, textarea {
   font-family: var(--font-main);
 }
 
-input:focus, select:focus, textarea:focus {
+input:focus,
+select:focus,
+textarea:focus {
   outline: none;
   border-color: var(--primary);
   box-shadow: 0 0 0 4px var(--primary-glow);
 }
 
-[data-theme='dark'] input, 
-[data-theme='dark'] select, 
-[data-theme='dark'] textarea {
+[data-theme="dark"] input,
+[data-theme="dark"] select,
+[data-theme="dark"] textarea {
   background: rgba(15, 23, 42, 0.6);
   border-color: rgba(255, 255, 255, 0.1);
 }
@@ -188,11 +212,13 @@ input:focus, select:focus, textarea:focus {
   margin-top: 20px;
 }
 
-.w-full { width: 100%; }
+.w-full {
+  width: 100%;
+}
 
 .btn-icon {
   background: var(--bg-card);
-  border: 1px solid rgba(0,0,0,0.05);
+  border: 1px solid rgba(0, 0, 0, 0.05);
   width: 44px;
   height: 44px;
   border-radius: 14px;
@@ -229,16 +255,26 @@ input:focus, select:focus, textarea:focus {
 }
 
 @keyframes rotation {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* Mobile Utilities */
-.mobile-only { display: none; }
+.mobile-only {
+  display: none;
+}
 @media (max-width: 768px) {
-  .mobile-only { display: block; }
-  .desktop-only { display: none; }
-  
+  .mobile-only {
+    display: block;
+  }
+  .desktop-only {
+    display: none;
+  }
+
   .card {
     padding: 16px;
     border-radius: var(--radius-md);
