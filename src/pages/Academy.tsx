@@ -1,45 +1,57 @@
-import React, { useState, useEffect } from 'react';
-import { Search, PlayCircle, BookOpen, ChevronRight, HelpCircle, Info } from 'lucide-react';
-import { useStore } from '../store';
-import './Academy.css';
+import React, { useState, useEffect } from "react";
+import {
+  Search,
+  PlayCircle,
+  BookOpen,
+  ChevronRight,
+  HelpCircle,
+  Info,
+} from "lucide-react";
+import { useStore } from "../store";
+import "./Academy.css";
 
 const Academy: React.FC = () => {
   const { lessons, fetchLessons } = useStore();
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [selectedArticle, setSelectedArticle] = useState<any>(null);
 
   useEffect(() => {
     fetchLessons();
   }, [fetchLessons]);
 
-  const filteredArticles = lessons.filter(a => 
-    a.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    a.category.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredArticles = lessons.filter(
+    (a) =>
+      a.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      a.category.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   const diagnostics = [
     {
-      title: 'Glukozalangan gemoglobin (HbA1c)',
-      description: 'Oxirgi 3 oylik o\'rtacha qand miqdori.',
+      title: "Glukozalangan gemoglobin (HbA1c)",
+      description: "Oxirgi 3 oylik o'rtacha qand miqdori.",
       levels: [
-        { range: '6.0% gacha', status: 'Me\'yor', color: 'var(--success)' },
-        { range: '6.0 – 6.4%', status: 'Xavf (prediabet)', color: 'var(--warning)' },
-        { range: '6.5%+ ', status: 'Diabet', color: 'var(--error)' }
-      ]
+        { range: "6.0% gacha", status: "Me'yor", color: "var(--success)" },
+        {
+          range: "6.0 – 6.4%",
+          status: "Xavf (prediabet)",
+          color: "var(--warning)",
+        },
+        { range: "6.5%+ ", status: "Diabet", color: "var(--error)" },
+      ],
     },
     {
-      title: 'S-Peptid tahlili',
-      description: 'Diabet turini (1 yoki 2) aniqlash uchun.',
-      customNote: 'Kam bo\'lsa: 1-tur. Ko\'p bo\'lsa: 2-tur.'
-    }
+      title: "S-Peptid tahlili",
+      description: "Diabet turini (1 yoki 2) aniqlash uchun.",
+      customNote: "Kam bo'lsa: 1-tur. Ko'p bo'lsa: 2-tur.",
+    },
   ];
 
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [selectedArticle]);
 
-  const currentIndex = selectedArticle 
-    ? lessons.findIndex(a => a.id === selectedArticle.id) 
+  const currentIndex = selectedArticle
+    ? lessons.findIndex((a) => a.id === selectedArticle.id)
     : -1;
 
   const handleNext = () => {
@@ -54,27 +66,65 @@ const Academy: React.FC = () => {
     }
   };
 
+  const getYoutubeEmbedUrl = (url: string) => {
+    if (!url) return "";
+
+    // Handle youtu.be/VIDEO_ID
+    if (url.includes("youtu.be/")) {
+      const id = url.split("youtu.be/")[1]?.split("?")[0];
+      return `https://www.youtube.com/embed/${id}`;
+    }
+
+    // Handle youtube.com/shorts/VIDEO_ID
+    if (url.includes("/shorts/")) {
+      const id = url.split("/shorts/")[1]?.split("?")[0];
+      return `https://www.youtube.com/embed/${id}`;
+    }
+
+    // Handle youtube.com/watch?v=VIDEO_ID
+    if (url.includes("watch?v=")) {
+      const id = url.split("watch?v=")[1]?.split("&")[0];
+      return `https://www.youtube.com/embed/${id}`;
+    }
+
+    // Handle youtube.com/embed/VIDEO_ID
+    if (url.includes("/embed/")) {
+      return url.split("?")[0];
+    }
+
+    return url;
+  };
+
   if (selectedArticle) {
+    const isYoutube =
+      selectedArticle.videoUrl &&
+      (selectedArticle.videoUrl.includes("youtube.com") ||
+        selectedArticle.videoUrl.includes("youtu.be"));
+
     return (
       <div className="academy-container lesson-page">
         <button className="back-btn" onClick={() => setSelectedArticle(null)}>
-          <ChevronRight size={20} style={{ transform: 'rotate(180deg)' }} />
+          <ChevronRight size={20} style={{ transform: "rotate(180deg)" }} />
           Barcha darslarga qaytish
         </button>
 
         <article className="lesson-full-content">
           {selectedArticle.videoUrl ? (
             <div className="video-container">
-              {selectedArticle.videoUrl.includes('youtube.com') || selectedArticle.videoUrl.includes('youtu.be') ? (
-                <iframe 
-                  src={selectedArticle.videoUrl.replace('watch?v=', 'embed/').split('&')[0]} 
+              {isYoutube ? (
+                <iframe
+                  src={getYoutubeEmbedUrl(selectedArticle.videoUrl)}
                   title={selectedArticle.title}
                   frameBorder="0"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen
                 ></iframe>
               ) : (
-                <video src={selectedArticle.videoUrl} controls poster={selectedArticle.imageUrl}></video>
+                <video
+                  src={selectedArticle.videoUrl}
+                  controls
+                  poster={selectedArticle.imageUrl}
+                ></video>
               )}
             </div>
           ) : selectedArticle.imageUrl ? (
@@ -87,28 +137,32 @@ const Academy: React.FC = () => {
             <span className="article-category">{selectedArticle.category}</span>
             <h1>{selectedArticle.title}</h1>
             <div className="article-meta">
-              {selectedArticle.duration} • {selectedArticle.videoUrl ? 'Video dars' : 'Mutolaa darsi'}
+              {selectedArticle.duration} •{" "}
+              {selectedArticle.videoUrl ? "Video dars" : "Mutolaa darsi"}
             </div>
           </header>
 
-          <div 
+          <div
             className="article-text-content"
             dangerouslySetInnerHTML={{ __html: selectedArticle.content }}
           />
 
           <footer className="lesson-footer">
             <div className="lesson-nav">
-              <button 
-                className="nav-btn prev" 
-                onClick={handlePrev} 
+              <button
+                className="nav-btn prev"
+                onClick={handlePrev}
                 disabled={currentIndex === 0}
               >
-                <ChevronRight size={20} style={{ transform: 'rotate(180deg)' }} />
+                <ChevronRight
+                  size={20}
+                  style={{ transform: "rotate(180deg)" }}
+                />
                 <span>Oldingi dars</span>
               </button>
-              
-              <button 
-                className="nav-btn next" 
+
+              <button
+                className="nav-btn next"
                 onClick={handleNext}
                 disabled={currentIndex === lessons.length - 1}
               >
@@ -116,9 +170,9 @@ const Academy: React.FC = () => {
                 <ChevronRight size={20} />
               </button>
             </div>
-            <button 
-              className="btn-primary w-full" 
-              style={{ marginTop: '24px' }}
+            <button
+              className="btn-primary w-full"
+              style={{ marginTop: "24px" }}
               onClick={() => setSelectedArticle(null)}
             >
               Darsni yakunlash
@@ -137,9 +191,9 @@ const Academy: React.FC = () => {
 
       <div className="search-bar glass">
         <Search size={20} color="var(--text-muted)" />
-        <input 
-          type="text" 
-          placeholder="Mavzuni qidiring..." 
+        <input
+          type="text"
+          placeholder="Mavzuni qidiring..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
@@ -160,7 +214,13 @@ const Academy: React.FC = () => {
                   {diag.levels.map((lvl, j) => (
                     <div key={j} className="diag-level-item">
                       <span className="diag-range">{lvl.range}</span>
-                      <span className="diag-status" style={{ color: lvl.color, background: `${lvl.color}15` }}>
+                      <span
+                        className="diag-status"
+                        style={{
+                          color: lvl.color,
+                          background: `${lvl.color}15`,
+                        }}
+                      >
                         {lvl.status}
                       </span>
                     </div>
@@ -183,35 +243,58 @@ const Academy: React.FC = () => {
 
       <div className="articles-list">
         {filteredArticles.length > 0 ? (
-          filteredArticles.map(article => (
-            <div 
-              key={article.id} 
+          filteredArticles.map((article) => (
+            <div
+              key={article.id}
               className="card article-card"
               onClick={() => setSelectedArticle(article)}
-              style={{ cursor: 'pointer' }}
+              style={{ cursor: "pointer" }}
             >
               <div className="article-image-preview">
                 {article.imageUrl ? (
                   <img src={article.imageUrl} alt={article.title} />
                 ) : (
                   <div className="article-icon-fallback">
-                    {article.videoUrl ? <PlayCircle size={24} color="var(--primary)" /> : <BookOpen size={24} color="var(--success)" />}
+                    {article.videoUrl ? (
+                      <PlayCircle size={24} color="var(--primary)" />
+                    ) : (
+                      <BookOpen size={24} color="var(--success)" />
+                    )}
                   </div>
                 )}
               </div>
               <div className="article-info">
                 <span className="article-category">{article.category}</span>
                 <h4>{article.title}</h4>
-                <span className="article-meta">{article.duration} • {article.videoUrl ? 'Video' : 'Maqola'}</span>
+                <span className="article-meta">
+                  {article.duration} • {article.videoUrl ? "Video" : "Maqola"}
+                </span>
               </div>
               <ChevronRight size={20} color="var(--text-muted)" />
             </div>
           ))
         ) : (
-          <div className="no-results glass-morphism" style={{ padding: '32px', textAlign: 'center', background: 'rgba(255,255,255,0.05)' }}>
-            <Info size={40} color="var(--primary)" style={{ marginBottom: '12px', opacity: 0.5 }} />
+          <div
+            className="no-results glass-morphism"
+            style={{
+              padding: "32px",
+              textAlign: "center",
+              background: "rgba(255,255,255,0.05)",
+            }}
+          >
+            <Info
+              size={40}
+              color="var(--primary)"
+              style={{ marginBottom: "12px", opacity: 0.5 }}
+            />
             <h4>Hozircha darslar mavjud emas</h4>
-            <p style={{ fontSize: '14px', color: 'var(--text-muted)', marginTop: '8px' }}>
+            <p
+              style={{
+                fontSize: "14px",
+                color: "var(--text-muted)",
+                marginTop: "8px",
+              }}
+            >
               Yangi darslar yaqin orada administrator tomonidan qo'shiladi.
             </p>
           </div>
