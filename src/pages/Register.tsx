@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { auth } from '../firebase';
+import { auth, db } from '../firebase';
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
+import { doc, setDoc } from 'firebase/firestore';
 import { User, Mail, Lock, UserPlus } from 'lucide-react';
 import './Login.css';
 
@@ -17,6 +18,23 @@ const Register: React.FC = () => {
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       await updateProfile(userCredential.user, { displayName: name });
+
+      // Create Firestore profile so doctor can see this patient
+      await setDoc(doc(db, "profiles", userCredential.user.uid), {
+        name,
+        email,
+        role: 'user',
+        birthDate: '',
+        gender: 'male',
+        weight: 0,
+        height: 0,
+        type: 'type1',
+        targetGlucose: 5.5,
+        sensitivity: 2.0,
+        nanInsulin: 1.0,
+        waterGoal: 2000,
+      });
+
       navigate('/');
     } catch (err: any) {
       setError(err.message);

@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { 
   BookOpen, Activity, PlusCircle, Save, 
   ChevronRight, ShieldCheck, Database, Trash2, Edit2, Undo2, Image, Video,
-  Upload, Loader, Play
+  Upload, Loader, Play, Stethoscope, Lock, Phone, Award, UserCircle
 } from 'lucide-react';
 import { useStore } from '../store';
 import './AdminDashboard.css';
@@ -12,9 +12,10 @@ const AdminDashboard: React.FC = () => {
     lessons, addLesson, updateLesson, deleteLesson, 
     exercises, fetchExercises, addExercise, updateExercise, deleteExercise,
     symptomDefinitions, fetchSymptomDefinitions, addSymptomDefinition, deleteSymptomDefinition,
-    uploadImage, seedLessons, seedExercises, seedSymptomDefinitions 
+    uploadImage, seedLessons, seedExercises, seedSymptomDefinitions,
+    doctorProfiles, fetchDoctorProfiles, addDoctorProfile, deleteDoctorProfile
   } = useStore();
-  const [activeTab, setActiveTab] = useState<'academy' | 'exercises' | 'symptoms'>('academy');
+  const [activeTab, setActiveTab] = useState<'academy' | 'exercises' | 'symptoms' | 'doctors'>('academy');
   const [editingId, setEditingId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -43,11 +44,21 @@ const AdminDashboard: React.FC = () => {
   
   const [newSymptomLabel, setNewSymptomLabel] = useState('');
 
+  // Doctor state
+  const [newDoctor, setNewDoctor] = useState({
+    login: '',
+    password: '',
+    name: '',
+    specialization: '',
+    licenseNumber: '',
+    phone: '',
+  });
 
   useEffect(() => {
     fetchExercises();
     fetchSymptomDefinitions();
-  }, [fetchExercises, fetchSymptomDefinitions]);
+    fetchDoctorProfiles();
+  }, [fetchExercises, fetchSymptomDefinitions, fetchDoctorProfiles]);
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -275,6 +286,41 @@ const AdminDashboard: React.FC = () => {
     }
   };
 
+  // Doctor management
+  const handleAddDoctor = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newDoctor.login || !newDoctor.password || !newDoctor.name || !newDoctor.specialization) return;
+    if (newDoctor.password.length < 6) {
+      alert("Parol kamida 6 ta belgi bo'lishi kerak!");
+      return;
+    }
+    try {
+      await addDoctorProfile({
+        ...newDoctor,
+        createdByAdmin: true,
+      });
+      setNewDoctor({ login: '', password: '', name: '', specialization: '', licenseNumber: '', phone: '' });
+      alert("Shifokor muvaffaqiyatli qo'shildi!");
+    } catch (error: any) {
+      console.error("Error adding doctor:", error);
+      if (error.code === 'auth/weak-password') {
+        alert("Parol juda oddiy. Kamida 6 ta belgi kiriting.");
+      } else {
+        alert("Xatolik yuz berdi!");
+      }
+    }
+  };
+
+  const handleDeleteDoctor = async (login: string, name: string) => {
+    if (confirm(`"${name}" shifokorni o'chirib tashlamoqchimisiz?`)) {
+      try {
+        await deleteDoctorProfile(login);
+      } catch (error) {
+        alert("Xatolik yuz berdi!");
+      }
+    }
+  };
+
   return (
     <div className="admin-dashboard-container">
       <header className="page-header">
@@ -307,6 +353,13 @@ const AdminDashboard: React.FC = () => {
           >
             <ShieldCheck size={20} />
             <span>Simptomlar</span>
+          </button>
+          <button 
+            className={`tab-item ${activeTab === 'doctors' ? 'active' : ''}`}
+            onClick={() => setActiveTab('doctors')}
+          >
+            <Stethoscope size={20} />
+            <span>Shifokorlar</span>
           </button>
         </aside>
 
@@ -660,6 +713,128 @@ const AdminDashboard: React.FC = () => {
                     <div className="empty-state">
                       <ShieldCheck size={32} opacity={0.3} />
                       <p>Simptomlar hali qo'shilmagan</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'doctors' && (
+            <div className="admin-section animate-in">
+              <div className="section-header">
+                <h2><Stethoscope size={22} /> Shifokorlar boshqaruvi ({doctorProfiles.length})</h2>
+              </div>
+
+              <div className="card admin-form-card glass">
+                <h3><PlusCircle size={18} /> Yangi shifokor qo'shish</h3>
+                <form onSubmit={handleAddDoctor} className="admin-form">
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label><UserCircle size={14} /> Login</label>
+                      <input 
+                        type="text" 
+                        placeholder="shifokor_login"
+                        value={newDoctor.login}
+                        onChange={e => setNewDoctor({...newDoctor, login: e.target.value.toLowerCase().replace(/\s/g, '')})}
+                        required
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label><Lock size={14} /> Parol</label>
+                      <input 
+                        type="password" 
+                        placeholder="Kamida 6 ta belgi"
+                        value={newDoctor.password}
+                        onChange={e => setNewDoctor({...newDoctor, password: e.target.value})}
+                        required
+                        minLength={6}
+                      />
+                    </div>
+                  </div>
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>F.I.Sh</label>
+                      <input 
+                        type="text" 
+                        placeholder="Shifokor ismi"
+                        value={newDoctor.name}
+                        onChange={e => setNewDoctor({...newDoctor, name: e.target.value})}
+                        required
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label><Award size={14} /> Mutaxasisligi</label>
+                      <input 
+                        type="text" 
+                        placeholder="Masalan: Endokrinolog"
+                        value={newDoctor.specialization}
+                        onChange={e => setNewDoctor({...newDoctor, specialization: e.target.value})}
+                        required
+                      />
+                    </div>
+                  </div>
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>Litsenziya raqami</label>
+                      <input 
+                        type="text" 
+                        placeholder="SH-12345"
+                        value={newDoctor.licenseNumber}
+                        onChange={e => setNewDoctor({...newDoctor, licenseNumber: e.target.value})}
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label><Phone size={14} /> Telefon</label>
+                      <input 
+                        type="tel" 
+                        placeholder="+998 90 123 45 67"
+                        value={newDoctor.phone}
+                        onChange={e => setNewDoctor({...newDoctor, phone: e.target.value})}
+                      />
+                    </div>
+                  </div>
+                  <div className="form-actions">
+                    <button type="submit" className="btn-primary">
+                      <Save size={18} /> Shifokor qo'shish
+                    </button>
+                  </div>
+                </form>
+              </div>
+
+              <div className="active-items-list">
+                <h3>Mavjud shifokorlar</h3>
+                <div className="items-grid">
+                  {doctorProfiles.map(doc => (
+                    <div key={doc.login} className="item-card glass">
+                      <div className="item-main-info">
+                        <div className="item-icon-circle" style={{ background: 'linear-gradient(135deg, var(--primary-soft), rgba(13,148,136,0.08))' }}>
+                          <Stethoscope size={18} color="var(--primary)" />
+                        </div>
+                        <div className="item-info">
+                          <h4>Dr. {doc.name}</h4>
+                          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '4px' }}>
+                            <span className="badge">{doc.specialization}</span>
+                            <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Login: {doc.login}</span>
+                          </div>
+                          {doc.phone && (
+                            <span style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px', display: 'block' }}>
+                              <Phone size={10} style={{ display: 'inline', marginRight: '4px' }} />{doc.phone}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <div className="item-actions">
+                        <button className="btn-icon-sm delete" onClick={() => handleDeleteDoctor(doc.login, doc.name)} title="O'chirish">
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                  {doctorProfiles.length === 0 && (
+                    <div className="empty-state">
+                      <Stethoscope size={32} opacity={0.3} />
+                      <p>Shifokorlar hali qo'shilmagan</p>
                     </div>
                   )}
                 </div>

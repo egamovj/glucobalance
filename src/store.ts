@@ -12,9 +12,11 @@ import {
   getDocs,
   orderBy,
   limit,
+  addDoc,
+  updateDoc,
 } from "firebase/firestore";
 
-interface UserProfile {
+export interface UserProfile {
   name: string;
   birthDate: string;
   gender: "male" | "female";
@@ -25,8 +27,53 @@ interface UserProfile {
   sensitivity: number;
   nanInsulin: number;
   doctorNotes?: string;
-  role: "user" | "admin";
+  role: "user" | "admin" | "doctor";
   waterGoal: number;
+  email?: string;
+}
+
+export interface DoctorProfile {
+  uid?: string;
+  login: string;
+  name: string;
+  specialization: string;
+  licenseNumber: string;
+  phone: string;
+  createdByAdmin: boolean;
+  createdAt: number;
+}
+
+export interface ChatRoom {
+  id: string;
+  patientId: string;
+  doctorId: string;
+  patientName: string;
+  doctorName: string;
+  lastMessage: string;
+  lastMessageTime: any;
+  updatedAt: any;
+}
+
+export interface ChatMessage {
+  id: string;
+  roomId: string;
+  senderId: string;
+  senderName: string;
+  text: string;
+  timestamp: any;
+}
+
+export interface Appointment {
+  id: string;
+  patientId: string;
+  patientName: string;
+  doctorId: string;
+  doctorName: string;
+  date: string;
+  time: string;
+  status: "pending" | "confirmed" | "completed" | "cancelled";
+  reason: string;
+  createdAt: any;
 }
 
 interface WaterLog {
@@ -91,6 +138,32 @@ interface AppState {
   syncFromFirestore: (userId: string) => Promise<void>;
   theme: "light" | "dark";
   toggleTheme: () => void;
+
+  // Doctor features
+  doctorProfiles: DoctorProfile[];
+  fetchDoctorProfiles: () => Promise<void>;
+  addDoctorProfile: (doctor: Omit<DoctorProfile, "createdAt"> & { password: string }) => Promise<void>;
+  deleteDoctorProfile: (login: string) => Promise<void>;
+  checkDoctorAccess: (login: string) => Promise<DoctorProfile | null>;
+
+  // Patient management (for doctor)
+  patients: any[];
+  fetchAllPatients: () => Promise<void>;
+  fetchPatientDetail: (uid: string) => Promise<any>;
+
+  // Chat
+  chatRooms: ChatRoom[];
+  fetchChatRooms: () => Promise<void>;
+  getOrCreateChatRoom: (patientId: string, patientName: string, doctorId: string, doctorName: string) => Promise<string>;
+  sendMessage: (roomId: string, text: string) => Promise<void>;
+  markRoomAsRead: (roomId: string) => Promise<void>;
+  getLastReadAt: (roomId: string) => Promise<number>;
+
+  // Appointments
+  appointments: Appointment[];
+  fetchAppointments: () => Promise<void>;
+  createAppointment: (appointment: Omit<Appointment, "id" | "createdAt" | "status">) => Promise<void>;
+  updateAppointmentStatus: (id: string, status: Appointment["status"]) => Promise<void>;
 }
 
 export const useStore = create<AppState>()(
@@ -107,6 +180,11 @@ export const useStore = create<AppState>()(
       lessons: [],
       exercises: [],
       symptomDefinitions: [],
+      doctorProfiles: [],
+      patients: [],
+      chatRooms: [],
+      appointments: [],
+
       setProfile: async (profile) => {
         const currentProfile = get().profile;
         const updatedProfile = {
@@ -408,6 +486,270 @@ export const useStore = create<AppState>()(
       theme: "light",
       toggleTheme: () =>
         set((state) => ({ theme: state.theme === "light" ? "dark" : "light" })),
+
+      // ========== Doctor Profile Management ==========
+      fetchDoctorProfiles: async () => {
+        const ref = collection(db, "doctor_profiles");
+        const q = query(ref, orderBy("createdAt", "desc"));
+        const snap = await getDocs(q);
+        const doctors = snap.docs.map((d) => ({
+          ...d.data(),
+          uid: d.id,
+        })) as DoctorProfile[];
+        set({ doctorProfiles: doctors });
+      },
+
+      addDoctorProfile: async (doctor) => {
+        const { password, ...doctorData } = doctor;
+        const docData = { ...doctorData, createdAt: Date.now() };
+        // Create Firebase Auth account using a secondary app to avoid signing out the admin
+        const { initializeApp, deleteApp } = await import('firebase/app');
+        const { getAuth, createUserWithEmailAndPassword } = await import('firebase/auth');
+        const syntheticEmail = `${doctor.login}@glucobalance.app`;
+        
+        // Create a temporary secondary app
+        const secondaryApp = initializeApp(
+          {
+            apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+            authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+            projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+          },
+          'secondary-auth-' + Date.now()
+        );
+        const secondaryAuth = getAuth(secondaryApp);
+        
+        try {
+          await createUserWithEmailAndPassword(secondaryAuth, syntheticEmail, password);
+        } catch (err: any) {
+          if (err.code !== 'auth/email-already-in-use') {
+            await deleteApp(secondaryApp);
+            throw err;
+          }
+        }
+        await deleteApp(secondaryApp);
+        
+        // Use login as doc ID for easy lookup
+        await setDoc(doc(db, "doctor_profiles", doctor.login), docData);
+        set((state) => ({
+          doctorProfiles: [docData, ...state.doctorProfiles],
+        }));
+      },
+
+      deleteDoctorProfile: async (login: string) => {
+        await deleteDoc(doc(db, "doctor_profiles", login));
+        set((state) => ({
+          doctorProfiles: state.doctorProfiles.filter((d) => d.login !== login),
+        }));
+      },
+
+      checkDoctorAccess: async (login: string) => {
+        const docRef = doc(db, "doctor_profiles", login);
+        const snap = await getDoc(docRef);
+        if (snap.exists()) {
+          return snap.data() as DoctorProfile;
+        }
+        return null;
+      },
+
+      // ========== Patient Management (Doctor view) ==========
+      fetchAllPatients: async () => {
+        const ref = collection(db, "profiles");
+        // Fetch all profiles, then filter out doctors and admins client-side
+        // This catches patients who don't have a role field set
+        const snap = await getDocs(ref);
+        const patients = snap.docs
+          .map((d) => ({
+            uid: d.id,
+            ...d.data(),
+          }))
+          .filter((p: any) => p.role !== 'doctor' && p.role !== 'admin');
+        set({ patients });
+      },
+
+      fetchPatientDetail: async (uid: string) => {
+        // Fetch profile
+        const profDoc = await getDoc(doc(db, "profiles", uid));
+        const profile = profDoc.exists() ? profDoc.data() : null;
+
+        // Fetch glucose logs
+        const logsRef = collection(db, "logs");
+        const qLogs = query(
+          logsRef,
+          where("userId", "==", uid),
+          orderBy("id", "desc"),
+          limit(30),
+        );
+        const logsSnap = await getDocs(qLogs);
+        const glucoseLogs = logsSnap.docs.map((d) => d.data());
+
+        // Fetch symptoms
+        const sympRef = collection(db, "symptoms");
+        const qSymp = query(
+          sympRef,
+          where("userId", "==", uid),
+          orderBy("id", "desc"),
+          limit(30),
+        );
+        const sympSnap = await getDocs(qSymp);
+        const symptoms = sympSnap.docs.map((d) => d.data());
+
+        // Fetch water logs
+        const waterRef = collection(db, "water_logs");
+        const qWater = query(
+          waterRef,
+          where("userId", "==", uid),
+          orderBy("timestamp", "desc"),
+          limit(30),
+        );
+        const waterSnap = await getDocs(qWater);
+        const waterLogs = waterSnap.docs.map((d) => d.data());
+
+        return { profile, glucoseLogs, symptoms, waterLogs };
+      },
+
+      // ========== Chat System ==========
+      fetchChatRooms: async () => {
+        const userId = get().user?.uid;
+        if (!userId) return;
+        const role = get().profile?.role;
+
+        const ref = collection(db, "chat_rooms");
+        const field = role === "doctor" ? "doctorId" : "patientId";
+        // No orderBy to avoid composite index requirement
+        const q = query(ref, where(field, "==", userId));
+        const snap = await getDocs(q);
+        const rooms = snap.docs.map((d) => ({
+          id: d.id,
+          ...d.data(),
+        })) as ChatRoom[];
+        // Sort client-side
+        rooms.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+        set({ chatRooms: rooms });
+      },
+
+      getOrCreateChatRoom: async (patientId, patientName, doctorId, doctorName) => {
+        // Check if chat room already exists for this specific doctor-patient pair
+        const ref = collection(db, "chat_rooms");
+        const q = query(
+          ref,
+          where("patientId", "==", patientId),
+          where("doctorId", "==", doctorId),
+        );
+        const snap = await getDocs(q);
+        if (!snap.empty) {
+          return snap.docs[0].id;
+        }
+
+        // Create new room
+        const newRoom = {
+          patientId,
+          doctorId,
+          patientName,
+          doctorName,
+          lastMessage: "",
+          lastMessageTime: null,
+          updatedAt: Date.now(),
+        };
+        const newDoc = await addDoc(collection(db, "chat_rooms"), newRoom);
+        // Update local state
+        set((state) => ({
+          chatRooms: [{ id: newDoc.id, ...newRoom } as ChatRoom, ...state.chatRooms],
+        }));
+        return newDoc.id;
+      },
+
+      sendMessage: async (roomId, text) => {
+        const user = get().user;
+        const profile = get().profile;
+        if (!user || !profile) return;
+
+        const msgData = {
+          roomId,
+          senderId: user.uid,
+          senderName: profile.name,
+          text,
+          timestamp: Date.now(),
+        };
+
+        try {
+          await addDoc(collection(db, "chat_messages"), msgData);
+
+          // Update room's last message
+          await updateDoc(doc(db, "chat_rooms", roomId), {
+            lastMessage: text,
+            lastMessageTime: Date.now(),
+            updatedAt: Date.now(),
+          });
+        } catch (error) {
+          console.error("Error in sendMessage:", error);
+          throw error;
+        }
+      },
+
+      markRoomAsRead: async (roomId: string) => {
+        const userId = get().user?.uid;
+        if (!userId) return;
+        const statusDocId = `${roomId}_${userId}`;
+        await setDoc(doc(db, "chat_read_status", statusDocId), {
+          roomId,
+          userId,
+          lastReadAt: Date.now(),
+        });
+      },
+
+      getLastReadAt: async (roomId: string) => {
+        const userId = get().user?.uid;
+        if (!userId) return 0;
+        const statusDocId = `${roomId}_${userId}`;
+        const snap = await getDoc(doc(db, "chat_read_status", statusDocId));
+        if (snap.exists()) {
+          return snap.data().lastReadAt || 0;
+        }
+        return 0;
+      },
+
+      // ========== Appointments ==========
+      fetchAppointments: async () => {
+        const userId = get().user?.uid;
+        const userEmail = get().user?.email;
+        if (!userId) return;
+        const role = get().profile?.role;
+
+        const ref = collection(db, "appointments");
+        // Appointments store doctorId as login, patientId as UID
+        const field = role === "doctor" ? "doctorId" : "patientId";
+        // For doctors, extract login from synthetic email (login@glucobalance.app -> login)
+        const doctorLogin = userEmail?.replace('@glucobalance.app', '') || '';
+        const value = role === "doctor" ? doctorLogin : userId;
+        const q = query(ref, where(field, "==", value), orderBy("createdAt", "desc"));
+        const snap = await getDocs(q);
+        const appointments = snap.docs.map((d) => ({
+          id: d.id,
+          ...d.data(),
+        })) as Appointment[];
+        set({ appointments });
+      },
+
+      createAppointment: async (appointment) => {
+        const newData = {
+          ...appointment,
+          status: "pending" as const,
+          createdAt: Date.now(),
+        };
+        const newDoc = await addDoc(collection(db, "appointments"), newData);
+        set((state) => ({
+          appointments: [{ id: newDoc.id, ...newData }, ...state.appointments],
+        }));
+      },
+
+      updateAppointmentStatus: async (id, status) => {
+        await updateDoc(doc(db, "appointments", id), { status });
+        set((state) => ({
+          appointments: state.appointments.map((a) =>
+            a.id === id ? { ...a, status } : a,
+          ),
+        }));
+      },
     }),
     {
       name: "glucobalance-storage",

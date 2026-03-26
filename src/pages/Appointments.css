@@ -1,0 +1,288 @@
+/* Appointments.css - Modern Queue System */
+
+.appointments-container {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.appt-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.appt-header-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.appt-header-title h1 {
+  font-size: 24px;
+  font-weight: 700;
+}
+
+/* Booking Card */
+.booking-card {
+  margin-bottom: 24px;
+  padding: 24px;
+}
+
+.booking-card h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 18px;
+  margin-bottom: 20px;
+}
+
+.booking-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-row-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.form-actions-2 {
+  display: flex;
+  gap: 12px;
+}
+
+.animate-in {
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Filter */
+.appt-filter {
+  margin-bottom: 20px;
+}
+
+.filter-group {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.filter-btn {
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  background: var(--bg-card);
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition);
+  font-family: var(--font-main);
+}
+
+.filter-btn:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.filter-btn.active {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
+/* Appointment List */
+.appt-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.appt-card {
+  padding: 20px;
+}
+
+.appt-card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.appt-person {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.appt-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, var(--primary-soft), rgba(13, 148, 136, 0.08));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary);
+  flex-shrink: 0;
+}
+
+.appt-person h4 {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.appt-reason {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.appt-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.appt-card-details {
+  display: flex;
+  gap: 20px;
+  padding: 10px 0;
+  border-top: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+[data-theme="dark"] .appt-card-details {
+  border-top-color: rgba(255, 255, 255, 0.06);
+}
+
+.appt-detail {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+/* Actions */
+.appt-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+[data-theme="dark"] .appt-actions {
+  border-top-color: rgba(255, 255, 255, 0.06);
+}
+
+.appt-action-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  border: none;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  font-family: var(--font-main);
+}
+
+.appt-action-btn.confirm {
+  background: #d1fae5;
+  color: #059669;
+}
+
+.appt-action-btn.confirm:hover {
+  background: #059669;
+  color: white;
+}
+
+.appt-action-btn.complete {
+  background: #e0e7ff;
+  color: #4f46e5;
+}
+
+.appt-action-btn.complete:hover {
+  background: #4f46e5;
+  color: white;
+}
+
+.appt-action-btn.cancel {
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+.appt-action-btn.cancel:hover {
+  background: #dc2626;
+  color: white;
+}
+
+/* Empty State */
+.appt-empty {
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.appt-empty p {
+  margin-top: 12px;
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.appt-empty span {
+  color: var(--text-muted);
+  font-size: 13px;
+  display: block;
+  margin-top: 4px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .appt-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .form-row-2 {
+    grid-template-columns: 1fr;
+  }
+
+  .appt-card-details {
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .filter-group {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: 4px;
+  }
+
+  .filter-btn {
+    white-space: nowrap;
+  }
+}

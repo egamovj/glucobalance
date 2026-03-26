@@ -1,24 +1,82 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { auth } from '../firebase';
+import { auth, db } from '../firebase';
 import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
-import { Mail, Lock, LogIn } from 'lucide-react';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { Mail, Lock, LogIn, Stethoscope, User, UserCircle } from 'lucide-react';
+import { useStore } from '../store';
+import type { UserProfile } from '../store';
 import './Login.css';
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [login, setLogin] = useState('');
   const [error, setError] = useState('');
+  const [loginMode, setLoginMode] = useState<'patient' | 'doctor'>('patient');
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+
+  const handleDoctorLogin = async (userCredential: any, doctorLogin: string) => {
+    // Check if this login exists in doctor_profiles
+    const doctorDoc = await getDoc(doc(db, "doctor_profiles", doctorLogin));
+    if (!doctorDoc.exists()) {
+      // Not a registered doctor
+      await auth.signOut();
+      setError("Login yoki parol noto'g'ri.");
+      return false;
+    }
+
+    // Set user profile as doctor
+    const doctorData = doctorDoc.data();
+    const profileData: UserProfile = {
+      name: doctorData.name || '',
+      email: `${doctorLogin}@glucobalance.app`,
+      role: 'doctor',
+      birthDate: '',
+      gender: 'male',
+      weight: 0,
+      height: 0,
+      type: 'type1',
+      targetGlucose: 5.5,
+      sensitivity: 2.0,
+      nanInsulin: 1.0,
+      waterGoal: 2000,
+    };
+
+    // Write to Firestore
+    await setDoc(doc(db, "profiles", userCredential.user.uid), profileData, { merge: true });
+
+    // Immediately update local Zustand store so DoctorRoute guard works
+    useStore.setState({ profile: profileData });
+
+    return true;
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
+    setIsLoading(true);
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-      navigate('/');
+      // For doctor mode, convert login to synthetic email
+      const authEmail = loginMode === 'doctor' ? `${login}@glucobalance.app` : email;
+      const userCredential = await signInWithEmailAndPassword(auth, authEmail, password);
+
+      if (loginMode === 'doctor') {
+        const isDoctor = await handleDoctorLogin(userCredential, login);
+        if (!isDoctor) {
+          setIsLoading(false);
+          return;
+        }
+        navigate('/doctor');
+      } else {
+        navigate('/');
+      }
     } catch (err: any) {
       console.error(err.code);
-      if (err.code === 'auth/invalid-credential') {
+      if (loginMode === 'doctor') {
+        setError('Login yoki parol noto\'g\'ri.');
+      } else if (err.code === 'auth/invalid-credential') {
         setError('Email yoki maxfiy so\'z noto\'g\'ri. Agar Google orqali ro\'yxatdan o\'tgan bo\'lsangiz, Google tugmasidan foydalaning.');
       } else if (err.code === 'auth/user-not-found') {
         setError('Foydalanuvchi topilmadi.');
@@ -28,9 +86,12 @@ const Login: React.FC = () => {
         setError('Kirishda xatolik yuz berdi. Qayta urinib ko\'ring.');
       }
     }
+    setIsLoading(false);
   };
 
   const handleGoogleLogin = async () => {
+    setError('');
+    setIsLoading(true);
     try {
       const provider = new GoogleAuthProvider();
       await signInWithPopup(auth, provider);
@@ -38,57 +99,105 @@ const Login: React.FC = () => {
     } catch (err: any) {
       setError(err.message);
     }
+    setIsLoading(false);
   };
 
   return (
     <div className="auth-container">
       <div className="card auth-card glass">
         <div className="auth-header">
-          <div className="logo-icon"><LogIn color="white" /></div>
-          <h1>Xush Kelibsiz</h1>
-          <p>Glucobalance hisobingizga kiring</p>
+          <div className="logo-icon">
+            {loginMode === 'doctor' ? <Stethoscope color="white" /> : <LogIn color="white" />}
+          </div>
+          <h1>{loginMode === 'doctor' ? 'Shifokor Kirish' : 'Xush Kelibsiz'}</h1>
+          <p>{loginMode === 'doctor' ? 'Shifokor hisobingizga kiring' : 'Glucobalance hisobingizga kiring'}</p>
+        </div>
+
+        {/* Role Toggle */}
+        <div className="role-toggle">
+          <button
+            className={`role-btn ${loginMode === 'patient' ? 'active' : ''}`}
+            onClick={() => { setLoginMode('patient'); setError(''); }}
+            type="button"
+          >
+            <User size={16} />
+            <span>Bemor</span>
+          </button>
+          <button
+            className={`role-btn ${loginMode === 'doctor' ? 'active' : ''}`}
+            onClick={() => { setLoginMode('doctor'); setError(''); }}
+            type="button"
+          >
+            <Stethoscope size={16} />
+            <span>Shifokor</span>
+          </button>
         </div>
 
         <form onSubmit={handleLogin} className="auth-form">
           {error && <div className="error-alert">{error}</div>}
-          
-          <div className="input-group">
-            <label><Mail size={16} /> Email</label>
-            <input 
-              type="email" 
-              value={email} 
-              onChange={(e) => setEmail(e.target.value)} 
-              placeholder="example@mail.com"
-              required 
-            />
-          </div>
+
+          {loginMode === 'doctor' ? (
+            <div className="input-group">
+              <label><UserCircle size={16} /> Login</label>
+              <input
+                type="text"
+                value={login}
+                onChange={(e) => setLogin(e.target.value.toLowerCase().replace(/\s/g, ''))}
+                placeholder="shifokor_login"
+                required
+              />
+            </div>
+          ) : (
+            <div className="input-group">
+              <label><Mail size={16} /> Email</label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="example@mail.com"
+                required
+              />
+            </div>
+          )}
 
           <div className="input-group">
-            <label><Lock size={16} /> Maxfiy so'z</label>
-            <input 
-              type="password" 
-              value={password} 
-              onChange={(e) => setPassword(e.target.value)} 
+            <label><Lock size={16} /> {loginMode === 'doctor' ? 'Parol' : 'Maxfiy so\'z'}</label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
-              required 
+              required
             />
           </div>
 
-          <button type="submit" className="btn-primary w-full">Kirish</button>
+          <button type="submit" className="btn-primary w-full" disabled={isLoading}>
+            {isLoading ? 'Kirish...' : 'Kirish'}
+          </button>
         </form>
 
-        <div className="auth-divider">
-          <span>yoki</span>
-        </div>
+        {loginMode === 'patient' && (
+          <>
+            <div className="auth-divider">
+              <span>yoki</span>
+            </div>
 
-        <button onClick={handleGoogleLogin} className="btn-secondary w-full google-btn">
-          <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" width="18" />
-          Google orqali kirish
-        </button>
+            <button onClick={handleGoogleLogin} className="btn-secondary w-full google-btn" disabled={isLoading}>
+              <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" width="18" />
+              Google orqali kirish
+            </button>
 
-        <p className="auth-footer">
-          Hisobingiz yo'qmi? <Link to="/register">Ro'yxatdan o'tish</Link>
-        </p>
+            <p className="auth-footer">
+              Hisobingiz yo'qmi? <Link to="/register">Ro'yxatdan o'tish</Link>
+            </p>
+          </>
+        )}
+
+        {loginMode === 'doctor' && (
+          <p className="auth-footer" style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+            Shifokor sifatida kirish uchun administrator tomonidan berilgan login va paroldan foydalaning.
+          </p>
+        )}
       </div>
     </div>
   );

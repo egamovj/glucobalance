@@ -20,6 +20,9 @@ const Profile = lazy(() => import('./pages/Profile'));
 const Login = lazy(() => import('./pages/Login'));
 const Register = lazy(() => import('./pages/Register'));
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
+const DoctorDashboard = lazy(() => import('./pages/DoctorDashboard'));
+const Chat = lazy(() => import('./pages/Chat'));
+const Appointments = lazy(() => import('./pages/Appointments'));
 
 const PageLoader = () => (
   <div className="loading-screen" style={{ background: 'transparent', height: '100%' }}>
@@ -63,6 +66,29 @@ const AdminRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return <>{children}</>;
 };
 
+const DoctorRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { profile, loading } = useStore();
+  
+  if (loading) return (
+    <div className="loading-screen">
+      <div className="loader"></div>
+    </div>
+  );
+  
+  if (profile?.role !== 'doctor') {
+    return (
+      <div className="access-denied glass-morphism" style={{ padding: '40px', textAlign: 'center' }}>
+        <ShieldAlert size={48} color="var(--error)" style={{ marginBottom: '16px' }} />
+        <h2>Kirish cheklangan</h2>
+        <p style={{ color: 'var(--text-muted)', marginTop: '12px' }}>Ushbu sahifa faqat shifokorlar uchun.</p>
+        <button className="btn-primary" style={{ marginTop: '24px' }} onClick={() => window.location.href = '/'}>Bosh sahifaga qaytish</button>
+      </div>
+    );
+  }
+  
+  return <>{children}</>;
+};
+
 function App() {
   const theme = useStore((state) => state.theme);
   const { setUser, setLoading } = useStore();
@@ -77,6 +103,33 @@ function App() {
       setLoading(false);
       if (user) {
         await useStore.getState().syncFromFirestore(user.uid);
+        
+        // Auto-create profile for users who logged in via Google but have no profile yet
+        const currentProfile = useStore.getState().profile;
+        if (!currentProfile) {
+          const { doc, setDoc, getDoc } = await import('firebase/firestore');
+          const { db } = await import('./firebase');
+          const profRef = doc(db, "profiles", user.uid);
+          const profSnap = await getDoc(profRef);
+          if (!profSnap.exists()) {
+            const defaultProfile = {
+              name: user.displayName || '',
+              email: user.email || '',
+              role: 'user' as const,
+              birthDate: '',
+              gender: 'male' as const,
+              weight: 0,
+              height: 0,
+              type: 'type1' as const,
+              targetGlucose: 5.5,
+              sensitivity: 2.0,
+              nanInsulin: 1.0,
+              waterGoal: 2000,
+            };
+            await setDoc(profRef, defaultProfile);
+            useStore.setState({ profile: defaultProfile });
+          }
+        }
       }
     });
     return () => unsubscribe();
@@ -99,7 +152,11 @@ function App() {
               <Route path="food-gi" element={<FoodGI />} />
               <Route path="calculator" element={<Calculator />} />
               <Route path="profile" element={<Profile />} />
+              <Route path="chat" element={<Chat />} />
+              <Route path="chat/:roomId" element={<Chat />} />
+              <Route path="appointments" element={<Appointments />} />
               <Route path="admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
+              <Route path="doctor" element={<DoctorRoute><DoctorDashboard /></DoctorRoute>} />
               <Route path="*" element={<Navigate to="/" />} />
             </Route>
           </Routes>

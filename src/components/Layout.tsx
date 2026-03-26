@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { useNavigate, NavLink, Outlet } from 'react-router-dom';
 import { 
   User, Activity, AlertCircle, BookOpen, Heart, Home, 
-  Calculator, LogOut, PieChart, Utensils, Menu, X, Shield 
+  Calculator, LogOut, PieChart, Utensils, Menu, X, Shield,
+  Stethoscope, MessageCircle, Calendar, Users
 } from 'lucide-react';
 import { auth } from '../firebase';
 import { signOut } from 'firebase/auth';
@@ -14,6 +15,7 @@ const Layout: React.FC = () => {
   const { profile } = useStore();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const isAdmin = profile?.role === 'admin';
+  const isDoctor = profile?.role === 'doctor';
 
   const handleLogout = async () => {
     try {
@@ -32,6 +34,72 @@ const Layout: React.FC = () => {
     setIsMobileMenuOpen(false);
   };
 
+  // Doctor sidebar navigation
+  const DoctorNavItems = () => (
+    <>
+      <NavLink to="/doctor" className={({ isActive }) => `sidebar-item ${isActive ? 'active' : ''}`}>
+        <Stethoscope size={20} />
+        <span>Shifokor Panel</span>
+      </NavLink>
+      <NavLink to="/chat" className={({ isActive }) => `sidebar-item ${isActive ? 'active' : ''}`}>
+        <MessageCircle size={20} />
+        <span>Xabarlar</span>
+      </NavLink>
+      <NavLink to="/appointments" className={({ isActive }) => `sidebar-item ${isActive ? 'active' : ''}`}>
+        <Calendar size={20} />
+        <span>Navbatlar</span>
+      </NavLink>
+    </>
+  );
+
+  // Patient sidebar navigation
+  const PatientNavItems = () => (
+    <>
+      <NavLink to="/" className={({ isActive }) => `sidebar-item ${isActive ? 'active' : ''}`}>
+        <Home size={20} />
+        <span>Dashboard</span>
+      </NavLink>
+      <NavLink to="/glucose" className={({ isActive }) => `sidebar-item ${isActive ? 'active' : ''}`}>
+        <Activity size={20} />
+        <span>Qand nazorati</span>
+      </NavLink>
+      <NavLink to="/calculator" className={({ isActive }) => `sidebar-item ${isActive ? 'active' : ''}`}>
+         <Calculator size={20} />
+        <span>Kalkulyator</span>
+      </NavLink>
+      <NavLink to="/symptoms" className={({ isActive }) => `sidebar-item ${isActive ? 'active' : ''}`}>
+        <AlertCircle size={20} />
+        <span>Simptomlar</span>
+      </NavLink>
+      <NavLink to="/analytics" className={({ isActive }) => `sidebar-item ${isActive ? 'active' : ''}`}>
+        <PieChart size={20} />
+        <span>Tahlil</span>
+      </NavLink>
+      <NavLink to="/food-gi" className={({ isActive }) => `sidebar-item ${isActive ? 'active' : ''}`}>
+        <Utensils size={20} />
+        <span>GI Katalog</span>
+      </NavLink>
+      <div className="nav-divider">Tushunchalar</div>
+      <NavLink to="/academy" className={({ isActive }) => `sidebar-item ${isActive ? 'active' : ''}`}>
+        <BookOpen size={20} />
+        <span>Akademiya</span>
+      </NavLink>
+      <NavLink to="/healthy" className={({ isActive }) => `sidebar-item ${isActive ? 'active' : ''}`}>
+        <Heart size={20} />
+        <span>Sog'lom hayot</span>
+      </NavLink>
+      <div className="nav-divider">Aloqa</div>
+      <NavLink to="/chat" className={({ isActive }) => `sidebar-item ${isActive ? 'active' : ''}`}>
+        <MessageCircle size={20} />
+        <span>Xabarlar</span>
+      </NavLink>
+      <NavLink to="/appointments" className={({ isActive }) => `sidebar-item ${isActive ? 'active' : ''}`}>
+        <Calendar size={20} />
+        <span>Navbat</span>
+      </NavLink>
+    </>
+  );
+
   return (
     <div className="app-container">
       {/* Desktop Sidebar */}
@@ -44,39 +112,8 @@ const Layout: React.FC = () => {
         </div>
         
         <nav className="sidebar-nav">
-          <NavLink to="/" className={({ isActive }) => `sidebar-item ${isActive ? 'active' : ''}`}>
-            <Home size={20} />
-            <span>Dashboard</span>
-          </NavLink>
-          <NavLink to="/glucose" className={({ isActive }) => `sidebar-item ${isActive ? 'active' : ''}`}>
-            <Activity size={20} />
-            <span>Qand nazorati</span>
-          </NavLink>
-          <NavLink to="/calculator" className={({ isActive }) => `sidebar-item ${isActive ? 'active' : ''}`}>
-             <Calculator size={20} />
-            <span>Kalkulyator</span>
-          </NavLink>
-          <NavLink to="/symptoms" className={({ isActive }) => `sidebar-item ${isActive ? 'active' : ''}`}>
-            <AlertCircle size={20} />
-            <span>Simptomlar</span>
-          </NavLink>
-          <NavLink to="/analytics" className={({ isActive }) => `sidebar-item ${isActive ? 'active' : ''}`}>
-            <PieChart size={20} />
-            <span>Tahlil</span>
-          </NavLink>
-          <NavLink to="/food-gi" className={({ isActive }) => `sidebar-item ${isActive ? 'active' : ''}`}>
-            <Utensils size={20} />
-            <span>GI Katalog</span>
-          </NavLink>
-          <div className="nav-divider">Tushunchalar</div>
-          <NavLink to="/academy" className={({ isActive }) => `sidebar-item ${isActive ? 'active' : ''}`}>
-            <BookOpen size={20} />
-            <span>Akademiya</span>
-          </NavLink>
-          <NavLink to="/healthy" className={({ isActive }) => `sidebar-item ${isActive ? 'active' : ''}`}>
-            <Heart size={20} />
-            <span>Sog'lom hayot</span>
-          </NavLink>
+          {isDoctor ? <DoctorNavItems /> : <PatientNavItems />}
+          
           {isAdmin && (
             <>
               <div className="nav-divider">Boshqaruv</div>
@@ -110,21 +147,40 @@ const Layout: React.FC = () => {
             </button>
           </div>
           <div className="drawer-content">
-             <NavLink to="/calculator" className="drawer-item" onClick={closeMobileMenu}>
-              <Calculator size={20} />
-              <span>Kalkulyator</span>
+            {isDoctor ? (
+              <>
+                <NavLink to="/doctor" className="drawer-item" onClick={closeMobileMenu}>
+                  <Stethoscope size={20} />
+                  <span>Shifokor Panel</span>
+                </NavLink>
+              </>
+            ) : (
+              <>
+                <NavLink to="/calculator" className="drawer-item" onClick={closeMobileMenu}>
+                  <Calculator size={20} />
+                  <span>Kalkulyator</span>
+                </NavLink>
+                <NavLink to="/symptoms" className="drawer-item" onClick={closeMobileMenu}>
+                  <AlertCircle size={20} />
+                  <span>Simptomlar</span>
+                </NavLink>
+                <NavLink to="/food-gi" className="drawer-item" onClick={closeMobileMenu}>
+                  <Utensils size={20} />
+                  <span>GI Katalog</span>
+                </NavLink>
+                <NavLink to="/academy" className="drawer-item" onClick={closeMobileMenu}>
+                  <BookOpen size={20} />
+                  <span>Akademiya</span>
+                </NavLink>
+              </>
+            )}
+            <NavLink to="/chat" className="drawer-item" onClick={closeMobileMenu}>
+              <MessageCircle size={20} />
+              <span>Xabarlar</span>
             </NavLink>
-            <NavLink to="/symptoms" className="drawer-item" onClick={closeMobileMenu}>
-              <AlertCircle size={20} />
-              <span>Simptomlar</span>
-            </NavLink>
-            <NavLink to="/food-gi" className="drawer-item" onClick={closeMobileMenu}>
-              <Utensils size={20} />
-              <span>GI Katalog</span>
-            </NavLink>
-            <NavLink to="/academy" className="drawer-item" onClick={closeMobileMenu}>
-              <BookOpen size={20} />
-              <span>Akademiya</span>
+            <NavLink to="/appointments" className="drawer-item" onClick={closeMobileMenu}>
+              <Calendar size={20} />
+              <span>Navbat</span>
             </NavLink>
             <NavLink to="/profile" className="drawer-item" onClick={closeMobileMenu}>
               <User size={20} />
@@ -147,22 +203,41 @@ const Layout: React.FC = () => {
 
       {/* Mobile Bottom Navigation */}
       <nav className="mobile-nav mobile-only glass">
-        <NavLink to="/" className={({ isActive }) => `mobile-nav-item ${isActive ? 'active' : ''}`} onClick={closeMobileMenu}>
-          <Home size={24} />
-          <span>Asosiy</span>
-        </NavLink>
-        <NavLink to="/glucose" className={({ isActive }) => `mobile-nav-item ${isActive ? 'active' : ''}`} onClick={closeMobileMenu}>
-          <Activity size={24} />
-          <span>Log</span>
-        </NavLink>
-        <NavLink to="/analytics" className={({ isActive }) => `mobile-nav-item ${isActive ? 'active' : ''}`} onClick={closeMobileMenu}>
-          <PieChart size={24} />
-          <span>Tahlil</span>
-        </NavLink>
-        <NavLink to="/healthy" className={({ isActive }) => `mobile-nav-item ${isActive ? 'active' : ''}`} onClick={closeMobileMenu}>
-          <Heart size={24} />
-          <span>Hayot</span>
-        </NavLink>
+        {isDoctor ? (
+          <>
+            <NavLink to="/doctor" className={({ isActive }) => `mobile-nav-item ${isActive ? 'active' : ''}`} onClick={closeMobileMenu}>
+              <Stethoscope size={24} />
+              <span>Panel</span>
+            </NavLink>
+            <NavLink to="/chat" className={({ isActive }) => `mobile-nav-item ${isActive ? 'active' : ''}`} onClick={closeMobileMenu}>
+              <MessageCircle size={24} />
+              <span>Chat</span>
+            </NavLink>
+            <NavLink to="/appointments" className={({ isActive }) => `mobile-nav-item ${isActive ? 'active' : ''}`} onClick={closeMobileMenu}>
+              <Calendar size={24} />
+              <span>Navbat</span>
+            </NavLink>
+          </>
+        ) : (
+          <>
+            <NavLink to="/" className={({ isActive }) => `mobile-nav-item ${isActive ? 'active' : ''}`} onClick={closeMobileMenu}>
+              <Home size={24} />
+              <span>Asosiy</span>
+            </NavLink>
+            <NavLink to="/glucose" className={({ isActive }) => `mobile-nav-item ${isActive ? 'active' : ''}`} onClick={closeMobileMenu}>
+              <Activity size={24} />
+              <span>Log</span>
+            </NavLink>
+            <NavLink to="/analytics" className={({ isActive }) => `mobile-nav-item ${isActive ? 'active' : ''}`} onClick={closeMobileMenu}>
+              <PieChart size={24} />
+              <span>Tahlil</span>
+            </NavLink>
+            <NavLink to="/chat" className={({ isActive }) => `mobile-nav-item ${isActive ? 'active' : ''}`} onClick={closeMobileMenu}>
+              <MessageCircle size={24} />
+              <span>Chat</span>
+            </NavLink>
+          </>
+        )}
         <button className={`mobile-nav-item btn-clear ${isMobileMenuOpen ? 'active' : ''}`} onClick={toggleMobileMenu}>
           <Menu size={24} />
           <span>Menyu</span>
