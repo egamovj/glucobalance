@@ -3,7 +3,7 @@ import { useNavigate, NavLink, Outlet } from 'react-router-dom';
 import { 
   User, Activity, AlertCircle, BookOpen, Heart, Home, 
   Calculator, LogOut, PieChart, Utensils, Menu, X, Shield,
-  Stethoscope, MessageCircle, Calendar, Users
+  Stethoscope, MessageCircle, Calendar
 } from 'lucide-react';
 import { auth } from '../firebase';
 import { signOut } from 'firebase/auth';
