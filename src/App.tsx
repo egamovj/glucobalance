@@ -23,6 +23,7 @@ const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
 const DoctorDashboard = lazy(() => import('./pages/DoctorDashboard'));
 const Chat = lazy(() => import('./pages/Chat'));
 const Appointments = lazy(() => import('./pages/Appointments'));
+const VideoCall = lazy(() => import('./pages/VideoCall'));
 
 const PageLoader = () => (
   <div className="loading-screen" style={{ background: 'transparent', height: '100%' }}>
@@ -154,6 +155,7 @@ function App() {
               <Route path="profile" element={<Profile />} />
               <Route path="chat" element={<Chat />} />
               <Route path="chat/:roomId" element={<Chat />} />
+              <Route path="video-call/:roomId" element={<VideoCall />} />
               <Route path="appointments" element={<Appointments />} />
               <Route path="admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
               <Route path="doctor" element={<DoctorRoute><DoctorDashboard /></DoctorRoute>} />

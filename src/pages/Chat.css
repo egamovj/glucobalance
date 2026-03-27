@@ -333,6 +333,136 @@
   cursor: not-allowed;
 }
 
+.chat-header-actions {
+  display: flex;
+  gap: 12px;
+  margin-left: auto;
+}
+
+.chat-action-btn {
+  background: var(--primary-soft);
+  color: var(--primary);
+  border: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.chat-action-btn:hover {
+  background: var(--primary);
+  color: white;
+  transform: translateY(-2px);
+}
+
+/* Specific button styles */
+.video-btn {
+  background: rgba(13, 148, 136, 0.1);
+}
+
+/* Video Call Message Styling */
+.video-call-msg {
+  background: var(--primary) !important;
+  color: white !important;
+  min-width: 200px;
+}
+
+.video-call-invitation {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 4px 0;
+}
+
+.video-invitation-content {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.video-invitation-content p {
+  margin: 0;
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.join-call-btn {
+  background: white;
+  color: var(--primary);
+  border: none;
+  padding: 8px;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: var(--transition);
+  font-size: 14px;
+}
+
+.join-call-btn:hover {
+  background: var(--primary-soft);
+  transform: translateY(-1px);
+}
+
+.sent .video-call-msg .msg-time {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.received .video-call-msg {
+  background: var(--primary) !important;
+  color: white !important;
+}
+
+.received .video-call-msg .join-call-btn {
+  background: white;
+  color: var(--primary);
+}
+
+/* Video Call Ended Summary */
+.video-call-summary {
+  padding: 4px 0;
+  min-width: 180px;
+}
+
+.summary-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  opacity: 0.9;
+}
+
+.summary-details {
+  font-size: 13px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  opacity: 0.8;
+}
+
+.summary-details p {
+  margin: 0;
+}
+
+.chat-msg.received .video-call-summary-bubble {
+  background: var(--bg-card) !important;
+  color: var(--text-main) !important;
+  border: 1px solid var(--primary-soft) !important;
+}
+
+.chat-msg.sent .video-call-summary-bubble {
+  background: linear-gradient(135deg, var(--primary), #0f766e) !important;
+  color: white !important;
+}
+
+.video-call-summary-bubble .summary-header {
+  color: inherit;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .chat-container {

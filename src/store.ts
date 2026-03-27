@@ -50,6 +50,7 @@ export interface ChatRoom {
   patientName: string;
   doctorName: string;
   lastMessage: string;
+  lastMessageType?: 'text' | 'video_call' | 'video_call_ended';
   lastMessageTime: any;
   updatedAt: any;
 }
@@ -60,6 +61,7 @@ export interface ChatMessage {
   senderId: string;
   senderName: string;
   text: string;
+  type?: 'text' | 'video_call' | 'video_call_ended';
   timestamp: any;
 }
 
@@ -155,7 +157,7 @@ interface AppState {
   chatRooms: ChatRoom[];
   fetchChatRooms: () => Promise<void>;
   getOrCreateChatRoom: (patientId: string, patientName: string, doctorId: string, doctorName: string) => Promise<string>;
-  sendMessage: (roomId: string, text: string) => Promise<void>;
+  sendMessage: (roomId: string, text: string, type?: 'text' | 'video_call' | 'video_call_ended') => Promise<void>;
   markRoomAsRead: (roomId: string) => Promise<void>;
   getLastReadAt: (roomId: string) => Promise<number>;
 
@@ -658,7 +660,7 @@ export const useStore = create<AppState>()(
         return newDoc.id;
       },
 
-      sendMessage: async (roomId, text) => {
+      sendMessage: async (roomId, text, type: 'text' | 'video_call' | 'video_call_ended' = 'text') => {
         const user = get().user;
         const profile = get().profile;
         if (!user || !profile) return;
@@ -668,6 +670,7 @@ export const useStore = create<AppState>()(
           senderId: user.uid,
           senderName: profile.name,
           text,
+          type,
           timestamp: Date.now(),
         };
 
@@ -677,6 +680,7 @@ export const useStore = create<AppState>()(
           // Update room's last message
           await updateDoc(doc(db, "chat_rooms", roomId), {
             lastMessage: text,
+            lastMessageType: type,
             lastMessageTime: Date.now(),
             updatedAt: Date.now(),
           });

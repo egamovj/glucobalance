@@ -4,7 +4,7 @@ import { useStore } from '../store';
 import { db } from '../firebase';
 import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import {
-  MessageCircle, Send, ArrowLeft, User, Stethoscope
+  MessageCircle, Send, ArrowLeft, User, Stethoscope, Video
 } from 'lucide-react';
 import './Chat.css';
 
@@ -14,6 +14,7 @@ interface Message {
   senderId: string;
   senderName: string;
   text: string;
+  type?: 'text' | 'video_call' | 'video_call_ended';
   timestamp: number;
 }
 
@@ -31,6 +32,8 @@ const Chat: React.FC = () => {
   const [unreadCounts, setUnreadCounts] = useState<UnreadCounts>({});
   const [lastReadTimes, setLastReadTimes] = useState<{ [roomId: string]: number }>({});
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const isNavigatingRef = useRef(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   const isDoctor = profile?.role === 'doctor';
 
   useEffect(() => {
@@ -114,13 +117,41 @@ const Chat: React.FC = () => {
         ...d.data(),
       })) as Message[];
       msgs.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+
+      // Play ringtone for NEW incoming video call messages
+      const latestMsg = msgs[msgs.length - 1];
+      if (latestMsg && latestMsg.type === 'video_call' && latestMsg.senderId !== user?.uid) {
+        const isRecent = Date.now() - (latestMsg.timestamp || 0) < 5000;
+        if (isRecent) {
+          playRingtone();
+        }
+      }
+
       setMessages(msgs);
     }, (error) => {
       console.error('Chat messages listener error:', error);
     });
 
-    return () => unsub();
-  }, [roomId]);
+    return () => {
+      unsub();
+      stopRingtone();
+    };
+  }, [roomId, user?.uid]);
+
+  const playRingtone = () => {
+    if (!audioRef.current) {
+      audioRef.current = new Audio('https://assets.mixkit.co/active_storage/sfx/1359/1359-preview.mp3');
+      audioRef.current.loop = true;
+    }
+    audioRef.current.play().catch(e => console.log('Audio play failed:', e));
+  };
+
+  const stopRingtone = () => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+    }
+  };
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -143,6 +174,21 @@ const Chat: React.FC = () => {
       e.preventDefault();
       handleSend();
     }
+  };
+
+  const handleSendVideoCall = async () => {
+    if (!roomId || sending || isNavigatingRef.current) return;
+    isNavigatingRef.current = true;
+    setSending(true);
+    stopRingtone();
+    try {
+      await sendMessage(roomId, "Video aloqa boshlandi. Qo'shilish uchun bosing.", 'video_call');
+      navigate(`/video-call/${roomId}`);
+    } catch (err) {
+      console.error('Error starting video call:', err);
+      isNavigatingRef.current = false;
+    }
+    setSending(false);
   };
 
   const activeRoom = chatRooms.find((r) => r.id === roomId);
@@ -214,7 +260,9 @@ const Chat: React.FC = () => {
                 <div className="room-info">
                   <h4>{isDoctor ? room.patientName : room.doctorName}</h4>
                   <p className="room-last-msg">
-                    {room.lastMessage || 'Hali xabar yo\'q'}
+                    {room.lastMessageType === 'video_call' ? "Video aloqa boshlandi..." :
+                     (room.lastMessageType === 'video_call_ended' || room.lastMessage?.startsWith('{"startTime"')) ? "Video aloqa yakunlandi" :
+                     room.lastMessage || 'Hali xabar yo\'q'}
                   </p>
                 </div>
                 <div className="room-meta">
@@ -259,6 +307,15 @@ const Chat: React.FC = () => {
             <span className="chat-status">Online</span>
           </div>
         </div>
+        <div className="chat-header-actions">
+          <button 
+            className="chat-action-btn video-btn" 
+            onClick={handleSendVideoCall}
+            title="Video qo'ng'iroq"
+          >
+            <Video size={20} />
+          </button>
+        </div>
       </div>
 
       <div className="chat-messages">
@@ -277,8 +334,48 @@ const Chat: React.FC = () => {
                   key={msg.id}
                   className={`chat-msg ${msg.senderId === user?.uid ? 'sent' : 'received'}`}
                 >
-                  <div className="msg-bubble">
-                    <p>{msg.text}</p>
+                  <div className={`msg-bubble ${msg.type && msg.type !== 'text' ? 'video-call-msg' : ''} ${msg.type === 'video_call_ended' ? 'video-call-summary-bubble' : ''}`}>
+                    {msg.type === 'video_call' ? (
+                      <div className="video-call-invitation">
+                        <div className="video-invitation-content">
+                          <Video size={24} />
+                          <p>Video aloqa boshlandi</p>
+                        </div>
+                        <button 
+                          className="join-call-btn"
+                          onClick={() => {
+                            stopRingtone();
+                            navigate(`/video-call/${roomId}`);
+                          }}
+                        >
+                          Qo'shilish
+                        </button>
+                      </div>
+                    ) : msg.type === 'video_call_ended' ? (
+                      <div className="video-call-summary">
+                        <div className="summary-header">
+                          <Video size={18} />
+                          <span>Video aloqa yakunlandi</span>
+                        </div>
+                        <div className="summary-details">
+                          {(() => {
+                            try {
+                              const meta = JSON.parse(msg.text);
+                              return (
+                                <>
+                                  <p>Boshlandi: {formatTime(meta.startTime)}</p>
+                                  <p>Davomiyligi: {meta.duration} daqiqa</p>
+                                </>
+                              );
+                            } catch {
+                              return <p>Video muloqot muvaffaqiyatli yakunlandi</p>;
+                            }
+                          })()}
+                        </div>
+                      </div>
+                    ) : (
+                      <p>{msg.text}</p>
+                    )}
                     <span className="msg-time">{formatTime(msg.timestamp)}</span>
                   </div>
                 </div>
