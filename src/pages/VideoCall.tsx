@@ -6,7 +6,6 @@ import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import './VideoCall.css';
 
-// Declare JitsiMeetExternalAPI on window
 declare global {
   interface Window {
     JitsiMeetExternalAPI: any;
@@ -23,59 +22,90 @@ const VideoCall: React.FC = () => {
   const joinTimeRef = useRef(Date.now());
 
   useEffect(() => {
-    let api: any = null;
+    if (!roomId || !user || !profile) return;
 
-    const initJitsi = () => {
+    // Load Jitsi script it not already present
+    const loadJitsiScript = () => {
+      return new Promise((resolve) => {
+        if (window.JitsiMeetExternalAPI) {
+          resolve(true);
+          return;
+        }
+        const script = document.createElement('script');
+        script.src = 'https://meet.jit.si/external_api.js';
+        script.async = true;
+        script.onload = () => resolve(true);
+        document.body.appendChild(script);
+      });
+    };
+
+    const initJitsi = async () => {
+      await loadJitsiScript();
+
       if (jitsiContainerRef.current && !apiRef.current) {
         const domain = 'meet.jit.si';
+        const sanitizedRoomId = roomId.replace(/[^a-zA-Z0-9_-]/g, '_');
+        const roomName = `Glucobalance_Medical_${sanitizedRoomId}`;
+
         const options = {
-          roomName: `Glucobalance_Medical_${roomId?.replace(/[^a-zA-Z0-9]/g, '_')}`,
+          roomName: roomName,
           width: '100%',
           height: '100%',
           parentNode: jitsiContainerRef.current,
           userInfo: {
-            displayName: profile?.name || 'Foydalanuvchi',
-            email: user?.email || '',
+            displayName: profile.name || (profile.role === 'doctor' ? 'Shifokor' : 'Bemor'),
           },
           configOverwrite: {
-            prejoinConfig: { enabled: false }, // Disables prejoin page
             startWithAudioMuted: false,
-            disableModeratorIndicator: true,
-            startScreenSharing: false,
-            enableEmailInStats: false,
+            disableThirdPartyRequests: true,
+            prejoinPageEnabled: false,
+            enableWelcomePage: false,
+            disableInviteFunctions: true,
+            enableClosePage: false,
+            hideConferenceTimer: false,
+            // Hiding promotional and distracting elements
+            disableSelfView: false,
+            displayInviteUrl: false,
+            doNotStoreRoom: true,
+            giphy: { enabled: false },
           },
           interfaceConfigOverwrite: {
             SHOW_JITSI_WATERMARK: false,
             SHOW_WATERMARK_FOR_GUESTS: false,
-            DISABLE_VIDEO_BACKGROUND: true,
+            SHOW_BRAND_WATERMARK: false,
+            SHOW_PROMOTIONAL_CLOSE_PAGE: false,
+            GENERATE_ROOMNAMES_ON_WELCOME_PAGE: false,
+            DISPLAY_WELCOME_PAGE_CONTENT: false,
+            APP_NAME: 'GlucoBalance',
+            NATIVE_APP_BANNER: { enabled: false },
+            MOBILE_APP_BANNER: { enabled: false },
+            AUTHENTICATION_ENABLE: false,
+            TOOLBAR_BUTTONS: [
+              'microphone', 'camera', 'closedcaptions', 'desktop', 'fullscreen',
+              'fodeviceselection', 'hangup', 'profile', 'chat', 'recording',
+              'livestreaming', 'etherpad', 'sharedvideo', 'settings', 'raisehand',
+              'videoquality', 'filmstrip', 'invite', 'feedback', 'stats', 'shortcuts',
+              'tileview', 'videobackgroundblur', 'download', 'help', 'mute-everyone',
+              'security'
+            ].filter(btn => ['microphone', 'camera', 'hangup', 'tileview', 'chat', 'settings'].includes(btn))
           },
         };
-        api = new window.JitsiMeetExternalAPI(domain, options);
+
+        const api = new window.JitsiMeetExternalAPI(domain, options);
         apiRef.current = api;
 
         api.addEventListeners({
-          readyToClose: () => handleManualExit(),
-          videoConferenceTerminated: () => handleManualExit(),
+          readyToClose: handleManualExit,
+          videoConferenceTerminated: handleManualExit,
+          participantJoined: () => setLoading(false),
         });
 
-        setLoading(false);
+        // Fallback for loader
+        setTimeout(() => setLoading(false), 5000);
       }
     };
 
-    if (window.JitsiMeetExternalAPI) {
-      initJitsi();
-    } else {
-      const existingScript = document.querySelector('script[src="https://meet.jit.si/external_api.js"]');
-      if (existingScript) {
-        existingScript.addEventListener('load', initJitsi);
-      } else {
-        const script = document.createElement('script');
-        script.src = 'https://meet.jit.si/external_api.js';
-        script.async = true;
-        script.onload = initJitsi;
-        document.body.appendChild(script);
-      }
-    }
+    initJitsi();
 
     return () => {
       if (apiRef.current) {
@@ -83,9 +113,9 @@ const VideoCall: React.FC = () => {
         apiRef.current = null;
       }
     };
-  }, [roomId, navigate, user, profile]);
+  }, [roomId, user, profile, navigate]);
 
-  // Listen for call termination from others
+  // Listen for call termination signaling from Firestore
   useEffect(() => {
     if (!roomId) return;
     const q = query(
@@ -133,8 +163,8 @@ const VideoCall: React.FC = () => {
           <span>Suhbatni yakunlash</span>
         </button>
         <div className="call-info">
-          <h3>Video aloqa</h3>
-          <span className="status-badge">Himoyalangan</span>
+          <h3>Video muloqot</h3>
+          <span className="status-badge">Himoyalangan aloqa</span>
         </div>
       </div>
 
@@ -142,7 +172,7 @@ const VideoCall: React.FC = () => {
         {loading && (
           <div className="video-loader">
             <Loader2 className="animate-spin" size={48} color="var(--primary)" />
-            <p>Video aloqa yuklanmoqda...</p>
+            <p>Video muloqot tayyorlanmoqda...</p>
           </div>
         )}
         <div ref={jitsiContainerRef} className="jitsi-container" />
