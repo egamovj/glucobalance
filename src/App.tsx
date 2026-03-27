@@ -11,6 +11,7 @@ import { ShieldAlert } from 'lucide-react';
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const Glucose = lazy(() => import('./pages/Glucose'));
 const Symptoms = lazy(() => import('./pages/Symptoms'));
+const Insulin = lazy(() => import('./pages/Insulin'));
 const Academy = lazy(() => import('./pages/Academy'));
 const Healthy = lazy(() => import('./pages/Healthy'));
 const Analytics = lazy(() => import('./pages/Analytics'));
@@ -147,6 +148,7 @@ function App() {
               <Route index element={<Dashboard />} />
               <Route path="glucose" element={<Glucose />} />
               <Route path="symptoms" element={<Symptoms />} />
+              <Route path="insulin" element={<ProtectedRoute><Insulin /></ProtectedRoute>} />
               <Route path="academy" element={<Academy />} />
               <Route path="healthy" element={<Healthy />} />
               <Route path="analytics" element={<Analytics />} />

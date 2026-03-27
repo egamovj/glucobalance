@@ -3,7 +3,7 @@ import { useNavigate, NavLink, Outlet } from 'react-router-dom';
 import { 
   User, Activity, AlertCircle, BookOpen, Heart, Home, 
   Calculator, LogOut, PieChart, Utensils, Menu, X, Shield,
-  Stethoscope, MessageCircle, Calendar
+  Stethoscope, MessageCircle, Calendar, Droplets
 } from 'lucide-react';
 import { auth } from '../firebase';
 import { signOut } from 'firebase/auth';
@@ -66,6 +66,10 @@ const Layout: React.FC = () => {
       <NavLink to="/calculator" className={({ isActive }) => `sidebar-item ${isActive ? 'active' : ''}`}>
          <Calculator size={20} />
         <span>Kalkulyator</span>
+      </NavLink>
+      <NavLink to="/insulin" className={({ isActive }) => `sidebar-item ${isActive ? 'active' : ''}`}>
+        <Droplets size={20} />
+        <span>Kunlik insulin</span>
       </NavLink>
       <NavLink to="/symptoms" className={({ isActive }) => `sidebar-item ${isActive ? 'active' : ''}`}>
         <AlertCircle size={20} />
@@ -159,6 +163,10 @@ const Layout: React.FC = () => {
                 <NavLink to="/calculator" className="drawer-item" onClick={closeMobileMenu}>
                   <Calculator size={20} />
                   <span>Kalkulyator</span>
+                </NavLink>
+                <NavLink to="/insulin" className="drawer-item" onClick={closeMobileMenu}>
+                  <Droplets size={20} />
+                  <span>Kunlik insulin</span>
                 </NavLink>
                 <NavLink to="/symptoms" className="drawer-item" onClick={closeMobileMenu}>
                   <AlertCircle size={20} />

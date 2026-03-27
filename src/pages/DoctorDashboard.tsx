@@ -14,7 +14,7 @@ const DoctorDashboard: React.FC = () => {
   const [selectedPatient, setSelectedPatient] = useState<any>(null);
   const [patientDetail, setPatientDetail] = useState<any>(null);
   const [loadingDetail, setLoadingDetail] = useState(false);
-  const [activeDetailTab, setActiveDetailTab] = useState<'glucose' | 'symptoms' | 'water'>('glucose');
+  const [activeDetailTab, setActiveDetailTab] = useState<'glucose' | 'symptoms' | 'water' | 'insulin'>('glucose');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -162,6 +162,13 @@ const DoctorDashboard: React.FC = () => {
                 <Droplets size={16} />
                 Suv
               </button>
+              <button
+                className={`detail-tab ${activeDetailTab === 'insulin' ? 'active' : ''}`}
+                onClick={() => setActiveDetailTab('insulin')}
+              >
+                <Activity size={16} />
+                Insulin
+              </button>
             </div>
 
             {/* Detail Content */}
@@ -238,6 +245,38 @@ const DoctorDashboard: React.FC = () => {
                         <div className="detail-empty">
                           <Droplets size={32} opacity={0.3} />
                           <p>Suv ma'lumotlari topilmadi</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {activeDetailTab === 'insulin' && (
+                    <div className="detail-list">
+                      {patientDetail?.insulinLogs?.length > 0 ? (
+                        patientDetail.insulinLogs.map((log: any, idx: number) => (
+                          <div key={idx} className="detail-item insulin-item">
+                            <div className="detail-item-icon" style={{ background: log.type === 'basal' ? '#f5f3ff' : '#e0f2fe', color: log.type === 'basal' ? '#8b5cf6' : '#0ea5e9' }}>
+                              <Activity size={16} />
+                            </div>
+                            <div className="detail-item-info">
+                              <span className="detail-item-value">{log.name} ({log.type})</span>
+                              <div className="detail-item-meta">
+                                {log.type === 'basal' ? (
+                                  <>Ert: {log.doses.morning || 0}u, Kech: {log.doses.evening || 0}u</>
+                                ) : (
+                                  <>Non: {log.doses.breakfast || 0}u, Tush: {log.doses.lunch || 0}u, Kech: {log.doses.dinner || 0}u, Qo'sh: {log.doses.additional || 0}u</>
+                                )}
+                              </div>
+                              <span className="detail-item-meta" style={{ display: 'block', fontSize: '10px' }}>
+                                {log.timestamp ? new Date(log.timestamp).toLocaleString('uz-UZ') : ''}
+                              </span>
+                            </div>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="detail-empty">
+                          <Activity size={32} opacity={0.3} />
+                          <p>Insulin ma'lumotlari topilmadi</p>
                         </div>
                       )}
                     </div>

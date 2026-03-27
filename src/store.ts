@@ -84,6 +84,22 @@ interface WaterLog {
   timestamp: string;
 }
 
+export interface InsulinLog {
+  id: string;
+  userId: string;
+  type: "basal" | "bolus";
+  name: string;
+  doses: {
+    morning?: number;
+    evening?: number;
+    breakfast?: number;
+    lunch?: number;
+    dinner?: number;
+    additional?: number;
+  };
+  timestamp: number;
+}
+
 interface Exercise {
   id: string;
   title: string;
@@ -113,6 +129,8 @@ interface AppState {
   addGlucoseLog: (log: any) => void;
   symptoms: any[];
   addSymptom: (symptom: any) => void;
+  insulinLogs: InsulinLog[];
+  addInsulinLog: (log: Omit<InsulinLog, "id" | "userId" | "timestamp">) => Promise<void>;
   waterLogs: WaterLog[];
   addWaterLog: (amount: number) => Promise<void>;
   deleteWaterLog: (id: string) => Promise<void>;
@@ -178,6 +196,7 @@ export const useStore = create<AppState>()(
       profile: null,
       glucoseLogs: [],
       symptoms: [],
+      insulinLogs: [],
       waterLogs: [],
       lessons: [],
       exercises: [],
@@ -219,6 +238,19 @@ export const useStore = create<AppState>()(
             userId: user.uid,
           });
         }
+      },
+      addInsulinLog: async (log) => {
+        const user = get().user;
+        if (!user) return;
+        const newDoc = doc(collection(db, "insulin_logs"));
+        const logData: InsulinLog = {
+          ...log,
+          id: newDoc.id,
+          userId: user.uid,
+          timestamp: Date.now(),
+        };
+        await setDoc(newDoc, logData);
+        set((state) => ({ insulinLogs: [logData, ...state.insulinLogs] }));
       },
       fetchLessons: async () => {
         const lessonsRef = collection(db, "academy_lessons");
@@ -464,6 +496,22 @@ export const useStore = create<AppState>()(
           ...doc.data(),
         })) as WaterLog[];
         set({ waterLogs });
+
+        // Sync Insulin Logs
+        const insulinRef = collection(db, "insulin_logs");
+        const qInsulin = query(
+          insulinRef,
+          where("userId", "==", userId),
+          limit(50),
+        );
+        const insulinSnap = await getDocs(qInsulin);
+        const insulinLogs = insulinSnap.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        })) as InsulinLog[];
+        // Sort client-side to avoid index requirement
+        const sortedInsulin = insulinLogs.sort((a, b) => b.timestamp - a.timestamp);
+        set({ insulinLogs: sortedInsulin });
       },
       addWaterLog: async (amount: number) => {
         const userId = get().user?.uid;
@@ -606,7 +654,18 @@ export const useStore = create<AppState>()(
         const waterSnap = await getDocs(qWater);
         const waterLogs = waterSnap.docs.map((d) => d.data());
 
-        return { profile, glucoseLogs, symptoms, waterLogs };
+        // Fetch insulin logs
+        const insulinRef = collection(db, "insulin_logs");
+        const qInsulin = query(
+          insulinRef,
+          where("userId", "==", uid),
+          limit(30),
+        );
+        const insulinSnap = await getDocs(qInsulin);
+        const insulinLogs = insulinSnap.docs.map((d) => d.data() as InsulinLog);
+        const sortedInsulin = insulinLogs.sort((a, b) => b.timestamp - a.timestamp);
+
+        return { profile, glucoseLogs, symptoms, waterLogs, insulinLogs: sortedInsulin };
       },
 
       // ========== Chat System ==========
