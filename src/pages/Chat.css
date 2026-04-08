@@ -193,6 +193,31 @@
   margin-top: 4px;
 }
 
+.chat-empty-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.chat-go-btn {
+  padding: 10px 24px;
+  border-radius: var(--radius-md);
+  background: var(--primary);
+  color: white;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  box-shadow: 0 4px 12px var(--primary-glow);
+  font-family: var(--font-main);
+}
+
+.chat-go-btn:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.1);
+}
+
 /* Messages Area */
 .chat-messages {
   flex: 1;

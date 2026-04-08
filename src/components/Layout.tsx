@@ -180,6 +180,10 @@ const Layout: React.FC = () => {
                   <BookOpen size={20} />
                   <span>Akademiya</span>
                 </NavLink>
+                <NavLink to="/healthy" className="drawer-item" onClick={closeMobileMenu}>
+                  <Heart size={20} />
+                  <span>Sog'lom hayot</span>
+                </NavLink>
               </>
             )}
             <NavLink to="/chat" className="drawer-item" onClick={closeMobileMenu}>

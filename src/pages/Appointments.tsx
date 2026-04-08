@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useStore } from '../store';
 import type { Appointment } from '../store';
 import { db } from '../firebase';
 import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import {
   Calendar, Clock, User, Stethoscope, CheckCircle,
-  XCircle, Plus
+  XCircle, Plus, MessageCircle
 } from 'lucide-react';
 import './Appointments.css';
 
@@ -13,8 +14,9 @@ const Appointments: React.FC = () => {
   const {
     user, profile, appointments,
     createAppointment, updateAppointmentStatus,
-    doctorProfiles, fetchDoctorProfiles
+    doctorProfiles, fetchDoctorProfiles, getOrCreateChatRoom
   } = useStore();
+  const navigate = useNavigate();
   const isDoctor = profile?.role === 'doctor';
   const [showBooking, setShowBooking] = useState(false);
   const [filterStatus, setFilterStatus] = useState<string>('all');
@@ -87,6 +89,32 @@ const Appointments: React.FC = () => {
       await updateAppointmentStatus(id, status);
     } catch (err) {
       console.error('Error updating appointment:', err);
+    }
+  };
+
+  const handleStartChat = async (appt: Appointment) => {
+    if (!user || !profile) return;
+    
+    // Find the doctor's profile to get their realUid
+    const doctorProf = doctorProfiles.find(d => d.login === appt.doctorId);
+    const doctorUid = doctorProf?.realUid;
+    
+    if (!doctorUid) {
+      alert("Shifokor hali tizimga kirmagan. Iltimos, keyinroq urinib ko'ring yoki shifokor bilan bog'lanishini kuting.");
+      return;
+    }
+    
+    try {
+      const roomId = await getOrCreateChatRoom(
+        user.uid,
+        profile.name,
+        doctorUid,
+        appt.doctorName
+      );
+      navigate(`/chat/${roomId}`);
+    } catch (err) {
+      console.error('Error starting chat:', err);
+      alert("Xabarlar xizmatida xatolik yuz berdi");
     }
   };
 
@@ -267,14 +295,22 @@ const Appointments: React.FC = () => {
               )}
 
               {/* Patient Actions */}
-              {!isDoctor && appt.status === 'pending' && (
+              {!isDoctor && (
                 <div className="appt-actions">
                   <button
-                    className="appt-action-btn cancel"
-                    onClick={() => handleStatus(appt.id, 'cancelled')}
+                    className="appt-action-btn chat"
+                    onClick={() => handleStartChat(appt)}
                   >
-                    <XCircle size={16} /> Bekor qilish
+                    <MessageCircle size={16} /> Xabar yozish
                   </button>
+                  {appt.status === 'pending' && (
+                    <button
+                      className="appt-action-btn cancel"
+                      onClick={() => handleStatus(appt.id, 'cancelled')}
+                    >
+                      <XCircle size={16} /> Bekor qilish
+                    </button>
+                  )}
                 </div>
               )}
             </div>

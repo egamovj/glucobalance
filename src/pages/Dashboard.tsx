@@ -1,6 +1,6 @@
 import React from 'react';
 import { useStore } from '../store';
-import { Activity, Calculator as CalcIcon, Heart, AlertCircle, ChevronRight, User, Utensils, BookOpen, Droplets } from 'lucide-react';
+import { Activity, Calculator as CalcIcon, Heart, AlertCircle, ChevronRight, Utensils, BookOpen, Droplets } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 import './Dashboard.css';
 
@@ -71,9 +71,9 @@ const Dashboard: React.FC = () => {
             <div className="action-icon" style={{ background: '#e0f2fe' }}><BookOpen color="#0ea5e9" /></div>
             <span>Akademiya</span>
           </NavLink>
-          <NavLink to="/profile" className="action-item">
-            <div className="action-icon" style={{ background: '#f8fafc' }}><User color="#64748b" /></div>
-            <span>Profil</span>
+          <NavLink to="/healthy" className="action-item">
+            <div className="action-icon" style={{ background: '#f0fdf9' }}><Heart color="#10b981" /></div>
+            <span>Sog'lom hayot</span>
           </NavLink>
         </div>
       </section>

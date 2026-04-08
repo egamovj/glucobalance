@@ -34,6 +34,7 @@ export interface UserProfile {
 
 export interface DoctorProfile {
   uid?: string;
+  realUid?: string;
   login: string;
   name: string;
   specialization: string;
@@ -569,20 +570,30 @@ export const useStore = create<AppState>()(
         const secondaryAuth = getAuth(secondaryApp);
         
         try {
-          await createUserWithEmailAndPassword(secondaryAuth, syntheticEmail, password);
+          const userCred = await createUserWithEmailAndPassword(secondaryAuth, syntheticEmail, password);
+          const realUid = userCred.user.uid;
+          
+          const docDataWithUid = { ...docData, realUid };
+          
+          await deleteApp(secondaryApp);
+          
+          // Use login as doc ID for easy lookup
+          await setDoc(doc(db, "doctor_profiles", doctor.login), docDataWithUid);
+          set((state) => ({
+            doctorProfiles: [docDataWithUid, ...state.doctorProfiles],
+          }));
         } catch (err: any) {
+          await deleteApp(secondaryApp);
           if (err.code !== 'auth/email-already-in-use') {
-            await deleteApp(secondaryApp);
             throw err;
           }
+          // If already in use, we still want to save the doc if possible, 
+          // but we might not have the UID. The login backfill will handle it.
+          await setDoc(doc(db, "doctor_profiles", doctor.login), docData);
+          set((state) => ({
+            doctorProfiles: [docData, ...state.doctorProfiles],
+          }));
         }
-        await deleteApp(secondaryApp);
-        
-        // Use login as doc ID for easy lookup
-        await setDoc(doc(db, "doctor_profiles", doctor.login), docData);
-        set((state) => ({
-          doctorProfiles: [docData, ...state.doctorProfiles],
-        }));
       },
 
       deleteDoctorProfile: async (login: string) => {

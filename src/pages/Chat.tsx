@@ -282,7 +282,14 @@ const Chat: React.FC = () => {
               <span>
                 {isDoctor
                   ? 'Bemor sahifasidan suhbat boshlang'
-                  : 'Shifokor bilan bog\'lanish uchun navbat oling'}
+                  : (
+                    <div className="chat-empty-actions">
+                      <p>Shifokor bilan bog'lanish uchun navbat oling</p>
+                      <button className="chat-go-btn" onClick={() => navigate('/appointments')}>
+                        Navbat olish
+                      </button>
+                    </div>
+                  )}
               </span>
             </div>
           )}

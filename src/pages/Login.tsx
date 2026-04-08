@@ -19,7 +19,8 @@ const Login: React.FC = () => {
 
   const handleDoctorLogin = async (userCredential: any, doctorLogin: string) => {
     // Check if this login exists in doctor_profiles
-    const doctorDoc = await getDoc(doc(db, "doctor_profiles", doctorLogin));
+    const doctorRef = doc(db, "doctor_profiles", doctorLogin);
+    const doctorDoc = await getDoc(doctorRef);
     if (!doctorDoc.exists()) {
       // Not a registered doctor
       await auth.signOut();
@@ -44,8 +45,13 @@ const Login: React.FC = () => {
       waterGoal: 2000,
     };
 
-    // Write to Firestore
+    // Write to Firestore - Profiles collection
     await setDoc(doc(db, "profiles", userCredential.user.uid), profileData, { merge: true });
+
+    // Backfill realUid in doctor_profiles if missing or different
+    if (doctorData.realUid !== userCredential.user.uid) {
+      await setDoc(doctorRef, { realUid: userCredential.user.uid }, { merge: true });
+    }
 
     // Immediately update local Zustand store so DoctorRoute guard works
     useStore.setState({ profile: profileData });

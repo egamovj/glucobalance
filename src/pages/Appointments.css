@@ -241,6 +241,16 @@
   color: white;
 }
 
+.appt-action-btn.chat {
+  background: var(--primary-soft);
+  color: var(--primary);
+}
+
+.appt-action-btn.chat:hover {
+  background: var(--primary);
+  color: white;
+}
+
 /* Empty State */
 .appt-empty {
   text-align: center;
