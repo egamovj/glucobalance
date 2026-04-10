@@ -5,6 +5,7 @@ import './Profile.css';
 
 const Profile: React.FC = () => {
   const { profile, setProfile, user } = useStore();
+  const isDoctor = profile?.role === 'doctor';
   const [isEditing, setIsEditing] = useState(!profile);
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [isIOS, setIsIOS] = useState(false);
@@ -97,6 +98,7 @@ const Profile: React.FC = () => {
           </div>
         </section>
 
+        {!isDoctor && (
         <div className="card info-list">
           <div className="section-title">
              <Activity size={20} color="var(--primary)" />
@@ -125,6 +127,7 @@ const Profile: React.FC = () => {
             </div>
           </div>
         </div>
+        )}
 
         <div className="card info-list">
           <div className="section-title">
@@ -204,6 +207,7 @@ const Profile: React.FC = () => {
         </div>
       </div>
 
+      {!isDoctor && (
       <div className="input-group">
         <label>Diabet turi</label>
         <select name="type" value={formData.type} onChange={handleChange}>
@@ -211,7 +215,9 @@ const Profile: React.FC = () => {
           <option value="type2">2-tur</option>
         </select>
       </div>
+      )}
 
+      {!isDoctor && (
       <div className="card form-section-card">
         <h3>Tibbiy sozlamalar</h3>
         <div className="input-group">
@@ -227,11 +233,14 @@ const Profile: React.FC = () => {
           <input type="number" step="0.1" name="sensitivity" value={formData.sensitivity} onChange={handleChange} required />
         </div>
       </div>
+      )}
 
+      {!isDoctor && (
       <div className="input-group">
         <label>Shifokor tavsiyalari (ixtiyoriy)</label>
         <textarea name="doctorNotes" value={formData.doctorNotes} onChange={handleChange} rows={3} />
       </div>
+      )}
 
       <button type="submit" className="btn-primary">Saqlash</button>
     </form>
