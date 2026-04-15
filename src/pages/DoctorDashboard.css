@@ -1,4 +1,4 @@
-/* DoctorDashboard.css - Premium Medical Dashboard */
+/* DoctorDashboard.css - Premium Medical Dashboard with Daily Reports */
 
 .doctor-dashboard {
   max-width: 1200px;
@@ -43,32 +43,630 @@
   margin-top: 2px;
 }
 
-.doctor-stats {
+/* ===== Daily Reports Section ===== */
+.daily-reports-section {
+  margin-bottom: 40px;
+}
+
+.daily-reports-header {
   display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
   gap: 12px;
 }
 
-.doctor-stat-card {
+.date-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.date-nav-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: var(--bg-card);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--text-main);
+  transition: var(--transition);
+}
+
+.date-nav-btn:hover:not(:disabled) {
+  background: var(--primary-soft);
+  color: var(--primary);
+  border-color: var(--primary-glow);
+}
+
+.date-nav-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+[data-theme="dark"] .date-nav-btn {
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.date-display {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 18px;
+  background: var(--bg-card);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
+  position: relative;
+  cursor: pointer;
+}
+
+[data-theme="dark"] .date-display {
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.date-display svg {
+  color: var(--primary);
+  flex-shrink: 0;
+}
+
+.date-input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+  width: 100%;
+  border: none !important;
+  padding: 0 !important;
+  box-shadow: none !important;
+}
+
+.date-label {
+  font-weight: 600;
+  font-size: 15px;
+  white-space: nowrap;
+}
+
+.refresh-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: var(--bg-card);
+  color: var(--text-main);
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  transition: var(--transition);
+  font-family: var(--font-main);
+}
+
+.refresh-btn:hover {
+  background: var(--primary-soft);
+  color: var(--primary);
+  border-color: var(--primary-glow);
+}
+
+.refresh-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+[data-theme="dark"] .refresh-btn {
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.refresh-btn .spin {
+  animation: rotation 1s linear infinite;
+}
+
+/* Summary Statistics Grid */
+.report-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.summary-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 16px;
+  border-radius: var(--radius-md);
+  transition: var(--transition);
+}
+
+.summary-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.summary-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.summary-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.summary-value {
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.summary-label {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+/* Report Cards Grid */
+.report-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.report-card {
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  transition: var(--transition);
+  display: flex;
+  flex-direction: column;
+}
+
+.report-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-lg);
+}
+
+/* Report Card Header */
+.report-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 20px 12px;
+  cursor: pointer;
+}
+
+.report-patient-info {
   display: flex;
   align-items: center;
   gap: 12px;
+}
+
+.report-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 18px;
+  color: white;
+  flex-shrink: 0;
+}
+
+.report-patient-info h4 {
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+
+.report-type-badge {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: var(--primary-soft);
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.report-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.report-action-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.report-action-btn.chat {
+  background: var(--primary);
+  color: white;
+}
+
+.report-action-btn.chat:hover {
+  filter: brightness(1.15);
+  transform: scale(1.05);
+}
+
+.report-action-btn.chat.small {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+}
+
+.report-chevron {
+  color: var(--text-soft);
+  transition: var(--transition);
+}
+
+.report-card:hover .report-chevron {
+  color: var(--primary);
+  transform: translateX(2px);
+}
+
+/* Report Card Body */
+.report-card-body {
+  padding: 0 20px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  flex: 1;
+}
+
+.report-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.report-section-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.section-count {
+  margin-left: auto;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-soft);
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+/* Glucose Pills */
+.glucose-values-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.glucose-pill {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid;
+  min-width: 54px;
+  transition: var(--transition);
+}
+
+.glucose-pill:hover {
+  transform: scale(1.05);
+}
+
+.glucose-pill-value {
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.glucose-pill-status {
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  opacity: 0.8;
+}
+
+/* Symptom Tags */
+.symptom-tags-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.report-symptom-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fde68a;
+  transition: var(--transition);
+}
+
+[data-theme="dark"] .report-symptom-tag {
+  background: rgba(245, 158, 11, 0.15);
+  color: #fbbf24;
+  border-color: rgba(245, 158, 11, 0.2);
+}
+
+/* Metrics Row */
+.report-metrics-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.report-metric {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: var(--bg-card);
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  border-radius: 10px;
+  flex: 1;
+  min-width: 120px;
+}
+
+[data-theme="dark"] .report-metric {
+  border-color: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.metric-value {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.metric-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-left: auto;
+}
+
+/* Report Card Footer */
+.report-card-footer {
+  padding: 0 20px 16px;
+  margin-top: auto;
+}
+
+.view-detail-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  background: rgba(0, 0, 0, 0.02);
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  font-family: var(--font-main);
+}
+
+.view-detail-btn:hover {
+  background: var(--primary-soft);
+  color: var(--primary);
+  border-color: var(--primary-glow);
+}
+
+[data-theme="dark"] .view-detail-btn {
+  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(255, 255, 255, 0.06);
+}
+
+/* Loading State */
+.reports-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  gap: 16px;
+}
+
+.reports-loading p {
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+/* No Reports Message */
+.no-reports-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 50px 20px;
+  border-radius: var(--radius-lg);
+  text-align: center;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.no-reports-message p {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.no-reports-message span {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+/* ===== Not Reported Section ===== */
+.not-reported-section {
+  margin-bottom: 32px;
+}
+
+.not-reported-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
   padding: 14px 20px;
   border-radius: var(--radius-md);
+  border: 1px dashed rgba(239, 68, 68, 0.25);
+  background: rgba(239, 68, 68, 0.03);
+  cursor: pointer;
+  transition: var(--transition);
+  font-family: var(--font-main);
+  color: var(--text-main);
 }
 
-.doctor-stat-card span {
-  font-size: 22px;
+.not-reported-toggle:hover {
+  background: rgba(239, 68, 68, 0.06);
+  border-color: rgba(239, 68, 68, 0.35);
+}
+
+[data-theme="dark"] .not-reported-toggle {
+  background: rgba(239, 68, 68, 0.05);
+  border-color: rgba(239, 68, 68, 0.15);
+}
+
+.not-reported-toggle-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #dc2626;
+}
+
+.not-reported-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 8px;
+  border-radius: 12px;
+  background: #fef2f2;
+  color: #dc2626;
+  font-size: 13px;
   font-weight: 700;
-  color: var(--primary);
 }
 
-.doctor-stat-card label {
-  font-size: 12px;
-  color: var(--text-muted);
+[data-theme="dark"] .not-reported-count {
+  background: rgba(239, 68, 68, 0.15);
+}
+
+.toggle-chevron {
+  color: #dc2626;
+  transition: transform 0.3s ease;
+}
+
+.toggle-chevron.rotated {
+  transform: rotate(90deg);
+}
+
+.not-reported-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 8px;
+  padding: 8px;
+  background: rgba(239, 68, 68, 0.02);
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(239, 68, 68, 0.08);
+  animation: fadeIn 0.2s ease;
+}
+
+[data-theme="dark"] .not-reported-list {
+  background: rgba(239, 68, 68, 0.03);
+  border-color: rgba(239, 68, 68, 0.08);
+}
+
+.not-reported-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  border-radius: 10px;
+  transition: var(--transition);
+}
+
+.not-reported-item:hover {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+[data-theme="dark"] .not-reported-item:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.not-reported-patient {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.not-reported-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: rgba(239, 68, 68, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 14px;
+  color: #dc2626;
+  flex-shrink: 0;
+}
+
+.not-reported-name {
+  font-size: 14px;
+  font-weight: 600;
   display: block;
 }
 
-/* Patients Section */
+.not-reported-type {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.not-reported-actions {
+  display: flex;
+  gap: 6px;
+}
+
+/* ===== Patients Section ===== */
 .patients-section {
   margin-bottom: 32px;
 }
@@ -210,7 +808,7 @@
   color: var(--text-muted);
 }
 
-/* Patient Detail Modal */
+/* ===== Patient Detail Modal ===== */
 .patient-detail-overlay {
   position: fixed;
   inset: 0;
@@ -369,13 +967,12 @@
 .detail-tabs {
   display: flex;
   gap: 4px;
-  padding: 0 24px;
-  margin-bottom: 16px;
   background: rgba(0, 0, 0, 0.02);
   margin-left: 24px;
   margin-right: 24px;
   border-radius: var(--radius-sm);
   padding: 4px;
+  margin-bottom: 16px;
 }
 
 .detail-tab {
@@ -474,11 +1071,34 @@
   font-size: 14px;
 }
 
-/* Responsive */
+/* ===== Responsive ===== */
+@media (max-width: 1024px) {
+  .report-cards-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 768px) {
   .doctor-header {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .report-summary-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .daily-reports-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .date-nav {
+    justify-content: center;
+  }
+
+  .refresh-btn {
+    justify-content: center;
   }
 
   .patients-header {
@@ -501,5 +1121,44 @@
 
   .patient-detail-modal {
     max-height: 85vh;
+  }
+
+  .report-cards-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .report-summary-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .summary-card {
+    padding: 14px 12px;
+    gap: 10px;
+  }
+
+  .summary-value {
+    font-size: 18px;
+  }
+
+  .summary-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+  }
+
+  .glucose-values-row {
+    gap: 4px;
+  }
+
+  .glucose-pill {
+    padding: 6px 8px;
+    min-width: 46px;
+  }
+
+  .glucose-pill-value {
+    font-size: 13px;
   }
 }

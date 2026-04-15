@@ -119,6 +119,15 @@ interface SymptomDefinition {
 }
 
 
+export interface DailyPatientReport {
+  patient: any;
+  glucoseLogs: any[];
+  symptoms: any[];
+  waterLogs: any[];
+  insulinLogs: InsulinLog[];
+  hasData: boolean;
+}
+
 interface AppState {
   user: any | null;
   loading: boolean;
@@ -172,6 +181,11 @@ interface AppState {
   fetchAllPatients: () => Promise<void>;
   fetchPatientDetail: (uid: string) => Promise<any>;
 
+  // Daily reports
+  dailyReports: DailyPatientReport[];
+  dailyReportsLoading: boolean;
+  fetchDailyReports: (date: string) => Promise<void>;
+
   // Chat
   chatRooms: ChatRoom[];
   fetchChatRooms: () => Promise<void>;
@@ -204,6 +218,8 @@ export const useStore = create<AppState>()(
       symptomDefinitions: [],
       doctorProfiles: [],
       patients: [],
+      dailyReports: [],
+      dailyReportsLoading: false,
       chatRooms: [],
       appointments: [],
 
@@ -579,6 +595,15 @@ export const useStore = create<AppState>()(
           
           // Use login as doc ID for easy lookup
           await setDoc(doc(db, "doctor_profiles", doctor.login), docDataWithUid);
+          
+          // CRITICAL: Also create a profile entry with role 'doctor' so they are filtered out of patient lists
+          await setDoc(doc(db, "profiles", realUid), {
+            name: doctor.name,
+            email: syntheticEmail,
+            role: 'doctor',
+            specialization: doctor.specialization
+          });
+
           set((state) => ({
             doctorProfiles: [docDataWithUid, ...state.doctorProfiles],
           }));
@@ -597,10 +622,20 @@ export const useStore = create<AppState>()(
       },
 
       deleteDoctorProfile: async (login: string) => {
-        await deleteDoc(doc(db, "doctor_profiles", login));
-        set((state) => ({
-          doctorProfiles: state.doctorProfiles.filter((d) => d.login !== login),
-        }));
+        try {
+          // 1. Delete from doctor_profiles
+          await deleteDoc(doc(db, "doctor_profiles", login));
+          
+          // 2. Also delete from profiles to avoid orphans
+          await deleteDoc(doc(db, "profiles", login));
+          
+          set((state) => ({
+            doctorProfiles: state.doctorProfiles.filter((d) => d.login !== login),
+          }));
+        } catch (error) {
+          console.error("Error deleting doctor profile:", error);
+          throw error;
+        }
       },
 
       checkDoctorAccess: async (login: string) => {
@@ -623,7 +658,10 @@ export const useStore = create<AppState>()(
             uid: d.id,
             ...d.data(),
           }))
-          .filter((p: any) => p.role !== 'doctor' && p.role !== 'admin');
+          .filter((p: any) => {
+            const role = (p.role || 'user').toLowerCase();
+            return role !== 'doctor' && role !== 'admin' && role !== 'shifokor';
+          });
         set({ patients });
       },
 
@@ -677,6 +715,118 @@ export const useStore = create<AppState>()(
         const sortedInsulin = insulinLogs.sort((a, b) => b.timestamp - a.timestamp);
 
         return { profile, glucoseLogs, symptoms, waterLogs, insulinLogs: sortedInsulin };
+      },
+
+      // ========== Daily Reports (Doctor Dashboard) ==========
+      fetchDailyReports: async (date: string) => {
+        const patients = get().patients;
+        if (patients.length === 0) return;
+
+        set({ dailyReportsLoading: true });
+
+        try {
+          // Create date boundaries
+          const dayStart = new Date(date);
+          dayStart.setHours(0, 0, 0, 0);
+          const dayEnd = new Date(date);
+          dayEnd.setHours(23, 59, 59, 999);
+          
+          const startMs = dayStart.getTime();
+          const endMs = dayEnd.getTime();
+          const startISO = dayStart.toISOString();
+          const endISO = dayEnd.toISOString();
+
+          // Use existing symptom definitions if loaded, otherwise fetch them
+          let sympDefMap = new Map(get().symptomDefinitions.map((s) => [s.id, s.label]));
+          if (sympDefMap.size === 0) {
+            const defRef = collection(db, "symptom_definitions");
+            const defSnap = await getDocs(defRef);
+            const defs = defSnap.docs.map((d) => ({ id: d.id, ...d.data() })) as any[];
+            sympDefMap = new Map(defs.map((s) => [s.id, s.label]));
+          }
+
+          // Optimized approach: Fetch all data for the day across all users in 4 queries
+          const fetchBatch = async (collName: string, isMs: boolean) => {
+            const q = query(
+              collection(db, collName),
+              where("timestamp", ">=", isMs ? startMs : startISO),
+              where("timestamp", "<=", isMs ? endMs : endISO)
+            );
+            const snap = await getDocs(q);
+            return snap.docs.map(d => ({ ...d.data(), id: d.id }));
+          };
+
+          const [allLogs, allSymptoms, allWater, allInsulin] = await Promise.all([
+            fetchBatch("logs", false), // ISO
+            fetchBatch("symptoms", false), // ISO
+            fetchBatch("water_logs", false), // ISO
+            fetchBatch("insulin_logs", true) // Ms
+          ]);
+
+          // Group by userId for quick lookup
+          const logsGroup = new Map();
+          const sympGroup = new Map();
+          const waterGroup = new Map();
+          const insulinGroup = new Map();
+
+          allLogs.forEach((l: any) => {
+            if (!logsGroup.has(l.userId)) logsGroup.set(l.userId, []);
+            logsGroup.get(l.userId).push(l);
+          });
+          allSymptoms.forEach((s: any) => {
+            if (!sympGroup.has(s.userId)) sympGroup.set(s.userId, []);
+            sympGroup.get(s.userId).push({
+              ...s,
+              symptomLabels: (s.symptoms || []).map((id: string) => sympDefMap.get(id) || id)
+            });
+          });
+          allWater.forEach((w: any) => {
+            if (!waterGroup.has(w.userId)) waterGroup.set(w.userId, []);
+            waterGroup.get(w.userId).push(w);
+          });
+          allInsulin.forEach((i: any) => {
+            if (!insulinGroup.has(i.userId)) insulinGroup.set(i.userId, []);
+            insulinGroup.get(i.userId).push(i);
+          });
+
+          // Assemble reports for all patients
+          const reports: DailyPatientReport[] = patients.map(patient => {
+            const uid = patient.uid;
+            const glucoseLogs = (logsGroup.get(uid) || []).sort((a: any, b: any) => 
+               new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+            );
+            const symptoms = (sympGroup.get(uid) || []).sort((a: any, b: any) => 
+               new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+            );
+            const waterLogs = waterGroup.get(uid) || [];
+            const insulinLogs = (insulinGroup.get(uid) || []).sort((a: any, b: any) => 
+               b.timestamp - a.timestamp
+            );
+
+            const hasData = glucoseLogs.length > 0 || symptoms.length > 0 || waterLogs.length > 0 || insulinLogs.length > 0;
+
+            return {
+              patient,
+              glucoseLogs,
+              symptoms,
+              waterLogs,
+              insulinLogs,
+              hasData
+            };
+          });
+
+          // Sort: patients with data first, then alphabetically
+          reports.sort((a, b) => {
+            if (a.hasData && !b.hasData) return -1;
+            if (!a.hasData && b.hasData) return 1;
+            return (a.patient.name || '').localeCompare(b.patient.name || '');
+          });
+
+          set({ dailyReports: reports, dailyReportsLoading: false });
+        } catch (err) {
+          console.error("Error in fetchDailyReports:", err);
+          set({ dailyReportsLoading: false });
+        }
       },
 
       // ========== Chat System ==========

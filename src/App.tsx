@@ -91,6 +91,20 @@ const DoctorRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return <>{children}</>;
 };
 
+const IndexRedirect: React.FC = () => {
+  const { profile, loading } = useStore();
+  
+  if (loading) return (
+    <div className="loading-screen">
+      <div className="loader"></div>
+    </div>
+  );
+  
+  if (profile?.role === 'admin') return <Navigate to="/admin" />;
+  if (profile?.role === 'doctor') return <Navigate to="/doctor" />;
+  return <Dashboard />;
+};
+
 function App() {
   const theme = useStore((state) => state.theme);
   const { setUser, setLoading } = useStore();
@@ -145,7 +159,9 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
-              <Route index element={<Dashboard />} />
+              <Route index element={
+                <IndexRedirect />
+              } />
               <Route path="glucose" element={<Glucose />} />
               <Route path="symptoms" element={<Symptoms />} />
               <Route path="insulin" element={<ProtectedRoute><Insulin /></ProtectedRoute>} />
