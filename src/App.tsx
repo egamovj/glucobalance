@@ -116,10 +116,10 @@ function App() {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setUser(user);
-      setLoading(false);
       if (user) {
         await useStore.getState().syncFromFirestore(user.uid);
       }
+      setLoading(false);
     });
     return () => unsubscribe();
   }, [setUser, setLoading]);

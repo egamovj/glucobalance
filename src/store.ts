@@ -200,6 +200,7 @@ interface AppState {
   fetchAppointments: () => Promise<void>;
   createAppointment: (appointment: Omit<Appointment, "id" | "createdAt" | "status">) => Promise<void>;
   updateAppointmentStatus: (id: string, status: Appointment["status"]) => Promise<void>;
+  logout: () => void;
 }
 
 export const useStore = create<AppState>()(
@@ -223,6 +224,18 @@ export const useStore = create<AppState>()(
       dailyReportsLoading: false,
       chatRooms: [],
       appointments: [],
+      logout: () => set({
+        user: null,
+        profile: null,
+        glucoseLogs: [],
+        symptoms: [],
+        insulinLogs: [],
+        waterLogs: [],
+        patients: [],
+        dailyReports: [],
+        chatRooms: [],
+        appointments: []
+      }),
 
       setProfile: async (profile) => {
         const currentProfile = get().profile;

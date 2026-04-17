@@ -12,7 +12,7 @@ import './Layout.css';
 
 const Layout: React.FC = () => {
   const navigate = useNavigate();
-  const { profile } = useStore();
+  const { profile, logout } = useStore();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const isAdmin = profile?.role === 'admin';
   const isDoctor = profile?.role === 'doctor';
@@ -20,6 +20,7 @@ const Layout: React.FC = () => {
   const handleLogout = async () => {
     try {
       await signOut(auth);
+      logout();
       navigate('/login');
     } catch (error) {
       console.error('Logout error:', error);
