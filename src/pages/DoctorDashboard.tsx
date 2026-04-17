@@ -226,7 +226,6 @@ const DoctorDashboard: React.FC = () => {
                 {reportedPatients.map((report: DailyPatientReport) => {
                   const { patient, glucoseLogs, symptoms, waterLogs, insulinLogs } = report;
                   const totalWater = waterLogs.reduce((sum: number, w: any) => sum + (w.amount || 0), 0);
-                  const latestGlucose = glucoseLogs[0];
 
                   return (
                     <div
