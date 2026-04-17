@@ -30,6 +30,7 @@ export interface UserProfile {
   role: "user" | "admin" | "doctor";
   waterGoal: number;
   email?: string;
+  doctorId?: string;
 }
 
 export interface DoctorProfile {
@@ -649,14 +650,23 @@ export const useStore = create<AppState>()(
 
       // ========== Patient Management (Doctor view) ==========
       fetchAllPatients: async () => {
+        const { user, profile } = get();
+        if (!user || !profile) return;
+
         const ref = collection(db, "profiles");
-        // Fetch all profiles, then filter out doctors and admins client-side
-        // This catches patients who don't have a role field set
-        const snap = await getDocs(ref);
+        let q: any = ref;
+
+        // If current user is a doctor, filter by their doctorId
+        if (profile.role === 'doctor') {
+          const doctorLogin = user.email?.replace('@glucobalance.app', '') || '';
+          q = query(ref, where("doctorId", "==", doctorLogin));
+        }
+
+        const snap = await getDocs(q);
         const patients = snap.docs
           .map((d) => ({
             uid: d.id,
-            ...d.data(),
+            ...(d.data() as object),
           }))
           .filter((p: any) => {
             const role = (p.role || 'user').toLowerCase();

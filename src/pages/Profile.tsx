@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useStore } from '../store';
-import { User, Activity, Ruler, Weight, Calendar, Heart, Shield, Download, Sun, Moon } from 'lucide-react';
+import { User, Activity, Ruler, Weight, Calendar, Heart, Shield, Download, Sun, Moon, Stethoscope } from 'lucide-react';
 import './Profile.css';
 
 const Profile: React.FC = () => {
-  const { profile, setProfile, user } = useStore();
+  const { profile, setProfile, user, doctorProfiles, fetchDoctorProfiles } = useStore();
   const isDoctor = profile?.role === 'doctor';
   const [isEditing, setIsEditing] = useState(!profile);
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
@@ -21,8 +21,11 @@ const Profile: React.FC = () => {
     sensitivity: 2.0,
     nanInsulin: 1.0,
     doctorNotes: '',
-    role: 'user'
+    role: 'user',
+    doctorId: ''
   });
+
+  const assignedDoctor = doctorProfiles.find(d => d.login === formData.doctorId);
 
   useEffect(() => {
     const standalone = window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone;
@@ -41,7 +44,10 @@ const Profile: React.FC = () => {
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
     };
-  }, []);
+    if (!isDoctor) {
+      fetchDoctorProfiles();
+    }
+  }, [fetchDoctorProfiles, isDoctor]);
 
   const handleInstallClick = async () => {
     if (!deferredPrompt) return;
@@ -134,6 +140,7 @@ const Profile: React.FC = () => {
              <Shield size={20} color="var(--primary)" />
              <h3>Ilova sozlamalari</h3>
           </div>
+          
           <div className="settings-item">
              <div className="settings-label">
                 <Sun size={18} />
@@ -146,6 +153,22 @@ const Profile: React.FC = () => {
              </button>
           </div>
         </div>
+
+        {!isDoctor && (
+          <div className="card info-list" style={{ marginTop: '16px' }}>
+            <div className="section-title">
+              <Stethoscope size={20} color="var(--primary)" />
+              <h3>Mening shifokorim</h3>
+            </div>
+            <div className="info-item">
+              <User size={18} />
+              <div>
+                <p>Shifokor</p>
+                <span>{assignedDoctor ? `Dr. ${assignedDoctor.name}` : 'Tanlanmagan'}</span>
+              </div>
+            </div>
+          </div>
+        )}
 
         {!isStandalone && (
           <div className="card install-card glass">
@@ -206,6 +229,20 @@ const Profile: React.FC = () => {
           <input type="number" name="height" value={formData.height} onChange={handleChange} required />
         </div>
       </div>
+
+      {!isDoctor && (
+      <div className="input-group">
+        <label><Stethoscope size={16} /> Shifokorni tanlang</label>
+        <select name="doctorId" value={formData.doctorId || ''} onChange={handleChange} required={!isDoctor}>
+          <option value="">Shifokorni tanlang...</option>
+          {doctorProfiles.map((d) => (
+            <option key={d.login} value={d.login}>
+              Dr. {d.name} ({d.specialization})
+            </option>
+          ))}
+        </select>
+      </div>
+      )}
 
       {!isDoctor && (
       <div className="input-group">

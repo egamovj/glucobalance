@@ -16,7 +16,7 @@ const DoctorDashboard: React.FC = () => {
   const {
     profile, patients, fetchAllPatients, fetchPatientDetail,
     getOrCreateChatRoom, user, dailyReports, dailyReportsLoading,
-    fetchDailyReports
+    fetchDailyReports, symptomDefinitions, fetchSymptomDefinitions
   } = useStore();
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -30,7 +30,8 @@ const DoctorDashboard: React.FC = () => {
 
   useEffect(() => {
     fetchAllPatients();
-  }, [fetchAllPatients]);
+    fetchSymptomDefinitions();
+  }, [fetchAllPatients, fetchSymptomDefinitions]);
 
   // Fetch daily reports when date changes or patients load
   useEffect(() => {
@@ -101,6 +102,11 @@ const DoctorDashboard: React.FC = () => {
     // Don't allow future dates
     if (d > new Date()) return;
     setSelectedDate(format(d, 'yyyy-MM-dd'));
+  };
+
+  const getSymptomLabel = (id: string) => {
+    const def = symptomDefinitions.find(d => d.id === id);
+    return def ? def.label : id;
   };
 
   const isToday = selectedDate === format(new Date(), 'yyyy-MM-dd');
@@ -513,7 +519,9 @@ const DoctorDashboard: React.FC = () => {
                               <AlertCircle size={16} />
                             </div>
                             <div className="detail-item-info">
-                              <span className="detail-item-value">{s.symptoms?.join(', ') || 'Noma\'lum'}</span>
+                              <span className="detail-item-value">
+                                {s.symptoms?.map((id: string) => getSymptomLabel(id)).join(', ') || 'Noma\'lum'}
+                              </span>
                               <span className="detail-item-meta">{s.date || ''}</span>
                             </div>
                           </div>
