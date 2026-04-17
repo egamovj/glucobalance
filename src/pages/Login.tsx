@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { auth, db } from '../firebase';
-import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { signInWithEmailAndPassword } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { Mail, Lock, LogIn, Stethoscope, User, UserCircle } from 'lucide-react';
 import { useStore } from '../store';
@@ -83,7 +83,7 @@ const Login: React.FC = () => {
       if (loginMode === 'doctor') {
         setError('Login yoki parol noto\'g\'ri.');
       } else if (err.code === 'auth/invalid-credential') {
-        setError('Email yoki maxfiy so\'z noto\'g\'ri. Agar Google orqali ro\'yxatdan o\'tgan bo\'lsangiz, Google tugmasidan foydalaning.');
+        setError('Email yoki maxfiy so\'z noto\'g\'ri.');
       } else if (err.code === 'auth/user-not-found') {
         setError('Foydalanuvchi topilmadi.');
       } else if (err.code === 'auth/wrong-password') {
@@ -95,18 +95,6 @@ const Login: React.FC = () => {
     setIsLoading(false);
   };
 
-  const handleGoogleLogin = async () => {
-    setError('');
-    setIsLoading(true);
-    try {
-      const provider = new GoogleAuthProvider();
-      await signInWithPopup(auth, provider);
-      navigate('/');
-    } catch (err: any) {
-      setError(err.message);
-    }
-    setIsLoading(false);
-  };
 
   return (
     <div className="auth-container">
@@ -184,15 +172,6 @@ const Login: React.FC = () => {
 
         {loginMode === 'patient' && (
           <>
-            <div className="auth-divider">
-              <span>yoki</span>
-            </div>
-
-            <button onClick={handleGoogleLogin} className="btn-secondary w-full google-btn" disabled={isLoading}>
-              <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" width="18" />
-              Google orqali kirish
-            </button>
-
             <p className="auth-footer">
               Hisobingiz yo'qmi? <Link to="/register">Ro'yxatdan o'tish</Link>
             </p>

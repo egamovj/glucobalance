@@ -34,6 +34,24 @@ const Layout: React.FC = () => {
     setIsMobileMenuOpen(false);
   };
 
+  // Admin sidebar navigation
+  const AdminNavItems = () => (
+    <>
+      <NavLink to="/admin" className={({ isActive }) => `sidebar-item ${isActive ? 'active' : ''}`}>
+        <Shield size={20} />
+        <span>Admin Panel</span>
+      </NavLink>
+      <NavLink to="/chat" className={({ isActive }) => `sidebar-item ${isActive ? 'active' : ''}`}>
+        <MessageCircle size={20} />
+        <span>Xabarlar</span>
+      </NavLink>
+      <NavLink to="/appointments" className={({ isActive }) => `sidebar-item ${isActive ? 'active' : ''}`}>
+        <Calendar size={20} />
+        <span>Navbatlar</span>
+      </NavLink>
+    </>
+  );
+
   // Doctor sidebar navigation
   const DoctorNavItems = () => (
     <>
@@ -116,17 +134,7 @@ const Layout: React.FC = () => {
         </div>
         
         <nav className="sidebar-nav">
-          {isDoctor ? <DoctorNavItems /> : <PatientNavItems />}
-          
-          {isAdmin && (
-            <>
-              <div className="nav-divider">Boshqaruv</div>
-              <NavLink to="/admin" className={({ isActive }) => `sidebar-item ${isActive ? 'active' : ''}`}>
-                <Shield size={20} />
-                <span>Admin Panel</span>
-              </NavLink>
-            </>
-          )}
+          {isAdmin ? <AdminNavItems /> : (isDoctor ? <DoctorNavItems /> : <PatientNavItems />)}
         </nav>
 
         <div className="sidebar-footer">
@@ -151,7 +159,14 @@ const Layout: React.FC = () => {
             </button>
           </div>
           <div className="drawer-content">
-            {isDoctor ? (
+            {isAdmin ? (
+              <>
+                <NavLink to="/admin" className="drawer-item" onClick={closeMobileMenu}>
+                  <Shield size={20} />
+                  <span>Admin Panel</span>
+                </NavLink>
+              </>
+            ) : isDoctor ? (
               <>
                 <NavLink to="/doctor" className="drawer-item" onClick={closeMobileMenu}>
                   <Stethoscope size={20} />
@@ -160,6 +175,10 @@ const Layout: React.FC = () => {
               </>
             ) : (
               <>
+                <NavLink to="/" className="drawer-item" onClick={closeMobileMenu}>
+                  <Home size={20} />
+                  <span>Dashboard</span>
+                </NavLink>
                 <NavLink to="/calculator" className="drawer-item" onClick={closeMobileMenu}>
                   <Calculator size={20} />
                   <span>Kalkulyator</span>
@@ -198,12 +217,6 @@ const Layout: React.FC = () => {
               <User size={20} />
               <span>Profil</span>
             </NavLink>
-            {isAdmin && (
-              <NavLink to="/admin" className="drawer-item" onClick={closeMobileMenu}>
-                <Shield size={20} />
-                <span>Admin Panel</span>
-              </NavLink>
-            )}
             <div className="drawer-divider"></div>
             <button onClick={handleLogout} className="drawer-item logout-item">
               <LogOut size={20} />
@@ -215,7 +228,22 @@ const Layout: React.FC = () => {
 
       {/* Mobile Bottom Navigation */}
       <nav className="mobile-nav mobile-only glass">
-        {isDoctor ? (
+        {isAdmin ? (
+          <>
+            <NavLink to="/admin" className={({ isActive }) => `mobile-nav-item ${isActive ? 'active' : ''}`} onClick={closeMobileMenu}>
+              <Shield size={24} />
+              <span>Panel</span>
+            </NavLink>
+            <NavLink to="/chat" className={({ isActive }) => `mobile-nav-item ${isActive ? 'active' : ''}`} onClick={closeMobileMenu}>
+              <MessageCircle size={24} />
+              <span>Chat</span>
+            </NavLink>
+            <NavLink to="/appointments" className={({ isActive }) => `mobile-nav-item ${isActive ? 'active' : ''}`} onClick={closeMobileMenu}>
+              <Calendar size={24} />
+              <span>Navbat</span>
+            </NavLink>
+          </>
+        ) : isDoctor ? (
           <>
             <NavLink to="/doctor" className={({ isActive }) => `mobile-nav-item ${isActive ? 'active' : ''}`} onClick={closeMobileMenu}>
               <Stethoscope size={24} />

@@ -119,33 +119,6 @@ function App() {
       setLoading(false);
       if (user) {
         await useStore.getState().syncFromFirestore(user.uid);
-        
-        // Auto-create profile for users who logged in via Google but have no profile yet
-        const currentProfile = useStore.getState().profile;
-        if (!currentProfile) {
-          const { doc, setDoc, getDoc } = await import('firebase/firestore');
-          const { db } = await import('./firebase');
-          const profRef = doc(db, "profiles", user.uid);
-          const profSnap = await getDoc(profRef);
-          if (!profSnap.exists()) {
-            const defaultProfile = {
-              name: user.displayName || '',
-              email: user.email || '',
-              role: 'user' as const,
-              birthDate: '',
-              gender: 'male' as const,
-              weight: 0,
-              height: 0,
-              type: 'type1' as const,
-              targetGlucose: 5.5,
-              sensitivity: 2.0,
-              nanInsulin: 1.0,
-              waterGoal: 2000,
-            };
-            await setDoc(profRef, defaultProfile);
-            useStore.setState({ profile: defaultProfile });
-          }
-        }
       }
     });
     return () => unsubscribe();
