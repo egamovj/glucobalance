@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { auth } from '../firebase';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import { signInWithEmailAndPassword, signInAnonymously } from 'firebase/auth';
+import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { db } from '../firebase';
 import { Mail, Lock, LogIn, Stethoscope, User, AlertCircle } from 'lucide-react';
 import './Login.css';
 
@@ -38,6 +40,38 @@ const Login: React.FC = () => {
       } else {
         setError('Tizimga kirishda xatolik yuz berdi. Iltimos qaytadan urining.');
       }
+    }
+    setIsLoading(false);
+  };
+
+  const handleGuestLogin = async () => {
+    setError('');
+    setIsLoading(true);
+    try {
+      const userCredential = await signInAnonymously(auth);
+      
+      const profDoc = await getDoc(doc(db, "profiles", userCredential.user.uid));
+      if (!profDoc.exists()) {
+        await setDoc(doc(db, "profiles", userCredential.user.uid), {
+          name: 'Mehmon',
+          email: 'mehmon@glucobalance.app',
+          role: 'user',
+          birthDate: '',
+          gender: 'male',
+          weight: 0,
+          height: 0,
+          type: 'type1',
+          targetGlucose: 5.5,
+          sensitivity: 2.0,
+          nanInsulin: 1.0,
+          waterGoal: 2000,
+        });
+      }
+
+      navigate('/');
+    } catch (err: any) {
+      console.error('Guest login error:', err);
+      setError('Mehmon sifatida kirishda xatolik yuz berdi.');
     }
     setIsLoading(false);
   };
@@ -135,9 +169,42 @@ const Login: React.FC = () => {
           </form>
 
           {loginMode === 'patient' && (
-            <p className="auth-footer">
-              Hisobingiz yo'qmi? <Link to="/register">Ro'yxatdan o'tish</Link>
-            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <p className="auth-footer" style={{ margin: 0 }}>
+                Hisobingiz yo'qmi? <Link to="/register">Ro'yxatdan o'tish</Link>
+              </p>
+              
+              <div style={{ position: 'relative', textAlign: 'center', margin: '8px 0' }}>
+                <div style={{ position: 'absolute', top: '50%', left: 0, right: 0, borderTop: '1px solid var(--border-color)', zIndex: 1 }}></div>
+                <span style={{ position: 'relative', zIndex: 2, background: 'var(--surface)', padding: '0 12px', color: 'var(--text-muted)', fontSize: '14px' }}>Yoki</span>
+              </div>
+
+              <button 
+                type="button" 
+                onClick={handleGuestLogin}
+                disabled={isLoading}
+                style={{ 
+                  display: 'flex', 
+                  justifyContent: 'center', 
+                  alignItems: 'center', 
+                  gap: '8px',
+                  width: '100%',
+                  padding: '14px',
+                  borderRadius: '16px',
+                  border: '1px solid var(--border-color)',
+                  background: 'var(--surface-1)',
+                  color: 'var(--text-color)',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease'
+                }}
+                onMouseOver={(e) => e.currentTarget.style.background = 'var(--surface-2)'}
+                onMouseOut={(e) => e.currentTarget.style.background = 'var(--surface-1)'}
+              >
+                <User size={20} />
+                Mehmon sifatida kirish
+              </button>
+            </div>
           )}
         </div>
       </div>
